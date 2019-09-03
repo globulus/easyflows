@@ -122,12 +122,7 @@ class Flow : Launchable {
     fun startForResult(context: Context, bundle: Bundle?, requestCode: Int) {
         addToFlowBundle(bundle)
         mRequestCode = requestCode
-        val tag: String?
-        if (mEntryRelay != null) {
-            tag = mEntryRelay!!.getEntryNode(context, this, flowBundle!!)
-        } else {
-            tag = mOriginTag
-        }
+        val tag: String? = mEntryRelay?.getEntryNode(context, this, flowBundle) ?: mOriginTag
         if (tag == null) {
             terminate(Activity.RESULT_CANCELED, null)
         } else {
@@ -152,8 +147,8 @@ class Flow : Launchable {
         val node = getAndCheck(tag)
         if (node.launchable is Post<*>) { // Add extras for FlowActivity
             val fullBundle = Bundle()
-            if (bundleCopy != null) {
-                fullBundle.putAll(bundleCopy)
+            bundleCopy?.let {
+                fullBundle.putAll(it)
             }
             fullBundle.putString(INTENT_FLOW_ID, id)
             fullBundle.putString(INTENT_ACTIVITY_TAG, tag)
@@ -180,8 +175,8 @@ class Flow : Launchable {
         val node = getAndCheck(tag)
         @Suppress("UNCHECKED_CAST")
         val nextTag = (node.relay as? Relay<T>)?.nextNode(this, activity, activity)
-        if (nextTag != null) { // null tag means that flow will terminate manually
-            jumpTo(nextTag, activity)
+        nextTag?.let { // null tag means that flow will terminate manually
+            jumpTo(it, activity)
         }
     }
 
@@ -200,9 +195,7 @@ class Flow : Launchable {
         val event = RebaseFlowEvent(id, survivorTag, originalReabse)
         EventBus.getDefault().post(event)
         mOriginTag = survivorTag
-        mObserver?.let {
-            it.rebased(this, event)
-        }
+        mObserver?.rebased(this, event)
     }
 
     /**
@@ -213,9 +206,7 @@ class Flow : Launchable {
     fun terminate(resultCode: Int, resultData: Intent?) {
         val event = TerminateFlowEvent(id, resultCode, resultData!!)
         EventBus.getDefault().post(event)
-        mObserver?.let {
-            it.terminated(this, event)
-        }
+        mObserver?.terminated(this, event)
     }
 
     /**

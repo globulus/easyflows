@@ -96,7 +96,7 @@ object FlowManager : Flow.Observer {
 
     @Synchronized
     fun rebase(survivorTag: String) {
-        check(!mActiveFlows.isEmpty()) { "Rebase called without an active flow!" }
+        check(mActiveFlows.isNotEmpty()) { "Rebase called without an active flow!" }
         val flow = mActiveFlows.peek()
         flow.rebase(survivorTag)
     }
@@ -107,7 +107,7 @@ object FlowManager : Flow.Observer {
      */
     @Synchronized
     fun terminate() {
-        check(!mActiveFlows.isEmpty()) { "Terminate called without an active flow!" }
+        check(mActiveFlows.isNotEmpty()) { "Terminate called without an active flow!" }
         val flow = mActiveFlows.peek()
         flow.terminate(Activity.RESULT_CANCELED, null)
     }
@@ -119,7 +119,7 @@ object FlowManager : Flow.Observer {
      */
     @Synchronized
     fun switchTo(flow: Flow, context: Context, bundle: Bundle) {
-        if (!mActiveFlows.isEmpty()) {
+        if (mActiveFlows.isNotEmpty()) {
             val current = mActiveFlows.peek()
             current.terminate(Activity.RESULT_CANCELED, null)
         }
@@ -175,12 +175,11 @@ object FlowManager : Flow.Observer {
 
     private fun removeLinkedFlows(current: Flow, event: TerminateFlowEvent?) {
         var currentCopy = current
-        val linked = mLinkedFlows[currentCopy]
-        if (linked != null) {
+        mLinkedFlows[currentCopy]?.let {
             mLinkedFlows.remove(currentCopy)
             currentCopy = mActiveFlows.peek()
-            check(linked == currentCopy) {
-                "Flow chain incorrect: got $currentCopy but expected $linked!"
+            check(it == currentCopy) {
+                "Flow chain incorrect: got $currentCopy but expected $it!"
             }
             if (event != null) {
                 currentCopy.terminate(event.resultCode, event.resultData)
@@ -190,12 +189,11 @@ object FlowManager : Flow.Observer {
 
     private fun rebaseLinkedFlow(current: Flow, originalEvent: RebaseFlowEvent) {
         var currentCopy = current
-        val linked = mLinkedFlows[currentCopy]
-        if (linked != null) {
+        mLinkedFlows[currentCopy]?.let {
             mLinkedFlows.remove(currentCopy)
             currentCopy = mActiveFlows.pop()
-            check(linked == currentCopy) {
-                "Flow chain incorrect: got $currentCopy but expected $linked!"
+            check(it == currentCopy) {
+                "Flow chain incorrect: got $currentCopy but expected $it!"
             }
             currentCopy.rebase(originalEvent.survivorTag, false)
             rebaseLinkedFlow(currentCopy, originalEvent)

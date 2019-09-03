@@ -11,5 +11,5 @@ interface EntryRelay {
     /**
      * @return The entry node tag for the given flow with the given start bundle.
      */
-    fun getEntryNode(context: Context, flow: Flow, bundle: Bundle): String
+    fun getEntryNode(context: Context, flow: Flow, bundle: Bundle?): String
 }

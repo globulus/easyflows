@@ -16,19 +16,15 @@ class Post<T : Activity> private constructor(
     private val mContext: Context,
     private val mLocus: Class<out Activity>
 ) : Launchable {
-    private var mFlags: Int = 0
-    private var mRebase: Boolean = false
+
+    private var mFlags = 0
+    private var mRebase = false
     private var mConditionalRebase: ValueProducer<Boolean>? = null
 
-    private var mPassIntentBundle: Boolean = false // Passes intent bundle from caller activity
-    private val mMainBundle: Bundle
+    private var mPassIntentBundle = false // Passes intent bundle from caller activity
+    private val mMainBundle = Bundle()
     private var mBundleProducer: BundleProducer<T>? = null
     private var mValueProducers: MutableMap<String, ValueProducer<Serializable>>? = null
-
-    init {
-        mFlags = 0
-        mMainBundle = Bundle()
-    }
 
     override fun launch(context: Context, bundle: Bundle?, flags: Int, requestCode: Int) {
         val intent = Intent(mContext, mLocus)

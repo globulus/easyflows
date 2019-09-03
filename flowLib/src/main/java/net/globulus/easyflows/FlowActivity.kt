@@ -37,9 +37,8 @@ class FlowActivity : AppCompatActivity() {
     }
 
     private fun handleFinish() {
-        val flowId = intent.getStringExtra(Flow.INTENT_FLOW_ID)
-        if (flowId != null) {
-            FlowManager.backOut(this, flowId, intent.getStringExtra(Flow.INTENT_ACTIVITY_TAG))
+        intent.getStringExtra(Flow.INTENT_FLOW_ID)?.let {
+            FlowManager.backOut(this, it, intent.getStringExtra(Flow.INTENT_ACTIVITY_TAG))
         }
     }
 

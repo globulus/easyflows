@@ -29,7 +29,7 @@ class RegisterFlow(packageContext: Context) : Flow(packageContext) {
             Post.Builder(packageContext, RegisterActivity::class.java)
                 .build()
         ) { _, a ->
-            if (a.isMinor())
+            if (a.isMinor)
                 FlowConstants.PARENTAL_CONSENT
             else
                 FlowConstants.PURCHASE

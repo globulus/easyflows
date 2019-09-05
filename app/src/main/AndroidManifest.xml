@@ -37,6 +37,12 @@
         <activity
             android:name=".activities.GenresActivity"
             android:label="@string/title_activity_genres" />
+        <activity
+            android:name=".activities.MoviesActivity"
+            android:label="@string/movies" />
+        <activity
+            android:name=".activities.ShopConfirmActivity"
+            android:label="@string/purchase_complete" />
     </application>
 
 </manifest>

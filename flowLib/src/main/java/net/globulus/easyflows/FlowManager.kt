@@ -3,7 +3,6 @@ package net.globulus.easyflows
 import android.app.Activity
 import android.content.Context
 import android.os.Bundle
-
 import java.util.concurrent.BlockingDeque
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
@@ -15,19 +14,20 @@ import java.util.concurrent.LinkedBlockingDeque
  */
 object FlowManager : FlowObserver {
 
-    private val mActiveFlows: BlockingDeque<Flow> = LinkedBlockingDeque()
-    private val mLinkedFlows: ConcurrentMap<Flow, Flow> = ConcurrentHashMap()
-    private var mTagActivityMapper: TagActivityMapper? = null
+    private val activeFlows: BlockingDeque<Flow> = LinkedBlockingDeque()
+    private val linkedFlows: ConcurrentMap<Flow, Flow> = ConcurrentHashMap()
+    private val originalLaunchContexts: ConcurrentMap<Flow, Context> = ConcurrentHashMap()
+    private var tagActivityMapper: TagActivityMapper? = null
 
     /**
      * @return the flow bundle of the currently active flow, and null if no flows are active
      */
     val currentBundle: Bundle?
         get() {
-            if (mActiveFlows.isEmpty()) {
+            if (activeFlows.isEmpty()) {
                 return null
             }
-            val flow = mActiveFlows.peek()
+            val flow = activeFlows.peek()
             return flow?.flowBundle
         }
 
@@ -36,7 +36,7 @@ object FlowManager : FlowObserver {
      * to be used.
      */
     fun setTagActivityMapper(mapper: TagActivityMapper) {
-        mTagActivityMapper = mapper
+        tagActivityMapper = mapper
     }
 
     /**
@@ -61,12 +61,13 @@ object FlowManager : FlowObserver {
     @Synchronized
     fun startForResult(flow: Flow, activity: Activity, requestCode: Int) {
         prepFlowStart(flow)
+        originalLaunchContexts[flow] = activity
         flow.startForResult(activity, null, requestCode)
     }
 
     private fun prepFlowStart(flow: Flow) {
         flow.setObserver(this)
-        mActiveFlows.push(flow)
+        activeFlows.push(flow)
     }
 
     /**
@@ -75,10 +76,10 @@ object FlowManager : FlowObserver {
      */
     @Synchronized
     fun <T> proceed(tag: String, activity: T) where T : Activity, T : Checklist {
-        if (mActiveFlows.isEmpty()) {
+        if (activeFlows.isEmpty()) {
             return
         }
-        mActiveFlows.peek().nextFrom(tag, activity)
+        activeFlows.peek().nextFrom(tag, activity)
     }
 
     /**
@@ -90,14 +91,21 @@ object FlowManager : FlowObserver {
      */
     @Synchronized
     fun <T> proceed(activity: T) where T : Activity, T : Checklist {
-        checkNotNull(mTagActivityMapper) { "A mapper must be set, use setTagActivityMapper()!" }
-        proceed(mTagActivityMapper!!.tagForActivity(activity), activity)
+        checkNotNull(tagActivityMapper) { "A mapper must be set, use setTagActivityMapper()!" }
+        proceed(tagActivityMapper!!.tagForActivity(activity), activity)
+    }
+
+    @Synchronized
+    fun getOriginalLaunchContextForRebase(): Context? {
+        check(activeFlows.isNotEmpty()) { "Getting original launch context without an active flow!" }
+        val flow = activeFlows.peekFirst()
+        return originalLaunchContexts[flow]
     }
 
     @Synchronized
     fun rebase(survivorTag: String) {
-        check(mActiveFlows.isNotEmpty()) { "Rebase called without an active flow!" }
-        val flow = mActiveFlows.peek()
+        check(activeFlows.isNotEmpty()) { "Rebase called without an active flow!" }
+        val flow = activeFlows.peek()
         flow.rebase(survivorTag)
     }
 
@@ -107,8 +115,8 @@ object FlowManager : FlowObserver {
      */
     @Synchronized
     fun terminate() {
-        check(mActiveFlows.isNotEmpty()) { "Terminate called without an active flow!" }
-        val flow = mActiveFlows.peek()
+        check(activeFlows.isNotEmpty()) { "Terminate called without an active flow!" }
+        val flow = activeFlows.peek()
         flow.terminate(Activity.RESULT_CANCELED, null)
     }
 
@@ -119,8 +127,8 @@ object FlowManager : FlowObserver {
      */
     @Synchronized
     fun switchTo(flow: Flow, context: Context, bundle: Bundle) {
-        if (mActiveFlows.isNotEmpty()) {
-            val current = mActiveFlows.peek()
+        if (activeFlows.isNotEmpty()) {
+            val current = activeFlows.peek()
             current.terminate(Activity.RESULT_CANCELED, null)
         }
         start(flow, context, bundle)
@@ -128,12 +136,12 @@ object FlowManager : FlowObserver {
 
     @Synchronized
     internal fun backOut(context: Context, flowId: String, tag: String) {
-        if (mActiveFlows.isEmpty()) {
+        if (activeFlows.isEmpty()) {
             return
         }
-        val flow = mActiveFlows.peek()
+        val flow = activeFlows.peek()
         if (flow.id == flowId && flow.willBackOutWith(context, tag)) {
-            mActiveFlows.pop()
+            activeFlows.pop()
         }
     }
 
@@ -144,18 +152,21 @@ object FlowManager : FlowObserver {
 
     @Synchronized
     override fun nextFlow(current: Flow, next: Flow) {
-        mLinkedFlows[next] = current
-        mActiveFlows.push(next)
+        linkedFlows[next] = current
+        originalLaunchContexts[current]?.let {
+            originalLaunchContexts[next] = it
+        }
+        activeFlows.push(next)
         next.setObserver(this)
     }
 
     @Synchronized
     override fun rebased(flow: Flow, event: RebaseFlowEvent) {
         if (event.originalRebase) {
-            val current = mActiveFlows.pop()
+            val current = activeFlows.pop()
             check(flow == current) { "Rebased flow != active flow!" }
             rebaseLinkedFlow(current, event)
-            mActiveFlows.push(current)
+            activeFlows.push(current)
         }
     }
 
@@ -165,22 +176,24 @@ object FlowManager : FlowObserver {
     }
 
     private fun flowEnded(flow: Flow, event: TerminateFlowEvent?) {
-        if (mActiveFlows.isEmpty()) {
+        if (activeFlows.isEmpty()) {
             return
         }
-        val current = mActiveFlows.pop()
+        val current = activeFlows.pop()
+        originalLaunchContexts.remove(current)
         check(flow == current) { "Finished flow != active flow!" }
         removeLinkedFlows(current, event)
     }
 
     private fun removeLinkedFlows(current: Flow, event: TerminateFlowEvent?) {
         var currentCopy = current
-        mLinkedFlows[currentCopy]?.let {
-            mLinkedFlows.remove(currentCopy)
-            currentCopy = mActiveFlows.peek()
+        linkedFlows[currentCopy]?.let {
+            linkedFlows.remove(currentCopy)
+            currentCopy = activeFlows.peek()
             check(it == currentCopy) {
                 "Flow chain incorrect: got $currentCopy but expected $it!"
             }
+            originalLaunchContexts.remove(currentCopy)
             if (event != null) {
                 currentCopy.terminate(event.resultCode, event.resultData)
             }
@@ -189,9 +202,9 @@ object FlowManager : FlowObserver {
 
     private fun rebaseLinkedFlow(current: Flow, originalEvent: RebaseFlowEvent) {
         var currentCopy = current
-        mLinkedFlows[currentCopy]?.let {
-            mLinkedFlows.remove(currentCopy)
-            currentCopy = mActiveFlows.pop()
+        linkedFlows[currentCopy]?.let {
+            linkedFlows.remove(currentCopy)
+            currentCopy = activeFlows.pop()
             check(it == currentCopy) {
                 "Flow chain incorrect: got $currentCopy but expected $it!"
             }

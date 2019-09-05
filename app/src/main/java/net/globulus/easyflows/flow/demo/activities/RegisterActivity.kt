@@ -34,9 +34,8 @@ class RegisterActivity : BaseActivity(), RegisterChecklist {
         }
     }
 
-    override fun isMinor(): Boolean {
-        return (dobDate?.year ?: DEFAULT_YEAR) >= (LocalDate.now().minusYears(MINOR_AGE).year)
-    }
+    override val isMinor
+        get() = (dobDate?.year ?: DEFAULT_YEAR) >= (LocalDate.now().minusYears(MINOR_AGE).year)
 
     companion object {
         private const val DEFAULT_YEAR = 1970

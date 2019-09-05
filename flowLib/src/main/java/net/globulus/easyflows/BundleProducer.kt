@@ -1,6 +1,5 @@
 package net.globulus.easyflows
 
-import android.app.Activity
 import android.os.Bundle
 
 /**
@@ -9,6 +8,6 @@ import android.os.Bundle
  * @param <T>
 </T> */
 @FunctionalInterface
-interface BundleProducer<in T : Activity> {
-    fun getBundle(activity: T): Bundle
+interface BundleProducer {
+    val bundle: Bundle
 }

@@ -17,6 +17,10 @@
     <string name="parental_consent">Parental Consent</string>
     <string name="title_activity_genres">GenresActivity</string>
     <string name="genres">Genres</string>
+    <string name="done">Done</string>
+    <string name="movies">Movies</string>
+    <string name="purchase_complete">Purchase Complete</string>
+    <string name="your_order_is_on_its_way">Your order is on its way!</string>
 
     <string-array name="genres">
         <item>Action</item>

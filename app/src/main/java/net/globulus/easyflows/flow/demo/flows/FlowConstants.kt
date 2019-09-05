@@ -11,6 +11,9 @@ object FlowConstants {
     const val PARENTAL_CONSENT = "parentalConsent"
     const val MAIN = "main"
     const val GENRES = "genres"
+    const val MOVIES = "movies"
+    const val SHOP_CONFIRM = "shopConfirm"
+
     const val PURCHASE = "purchase"
 
     enum class Source {
@@ -26,6 +29,8 @@ object FlowConstants {
                 is ParentalConsentActivity -> PARENTAL_CONSENT
                 is MainActivity -> MAIN
                 is GenresActivity -> GENRES
+                is MoviesActivity -> MOVIES
+                is ShopConfirmActivity -> SHOP_CONFIRM
                 else -> throw IllegalArgumentException("Unable to infer tag for: $activity")
             }
         }
@@ -38,7 +43,7 @@ object FlowConstants {
 
     orders -> order movies -> orders (via terminate flow)
                                                                    -> nothing ordered, done, return empty
-    order movies = genres -> order pages per genre, 3 pages -> cart
+    order movies = genres -> order page per genre, via bundleProducer
                                                                   -> rebase to acknowledgement, return selection
     order movies has ExitRelay to Main if from REGISTER
      */

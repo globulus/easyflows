@@ -19,21 +19,20 @@ open class Flow(protected val packageContext: Context) : Launchable {
      */
     val id: String = UUID.randomUUID().toString()
 
-    private val mLayout: MutableMap<String, Node<*>> = HashMap()
-    private var mOriginTag: String? = null
-    private var mIsNewTask: Boolean = false
-    private var mEntryRelay: EntryRelay? = null
-    private var mExitRelay: ExitRelay? = null
-    private var mObserver: FlowObserver? = null
-    private var mRequestCode: Int = 0
+    private val layout: MutableMap<String, Node<*>> = HashMap()
+    private var originTag: String? = null
+    private var isNewTask: Boolean = false
+    private var entryRelay: EntryRelay? = null
+    private var exitRelay: ExitRelay? = null
+    private var observer: FlowObserver? = null
+    private var requestCode: Int = 0
 
     // TODO reconsider making flow bundle unmodifiable or returning a copy of it to prevent
     // TODO modifications in get places
     /**
      * Gets the current flow bundle (the instance, not a copy).
      */
-    var flowBundle: Bundle? = null
-        private set
+    val flowBundle = Bundle()
 
     /**
      * Adds a new node in the current Flow.
@@ -45,7 +44,7 @@ open class Flow(protected val packageContext: Context) : Launchable {
      * @return this to allow for fluent syntax
     </C></L> */
     fun <L : Launchable, C : Checklist> put(tag: String, launchable: L, relay: Relay<C>?): Flow {
-        mLayout[tag] = Node(launchable, relay)
+        layout[tag] = Node(launchable, relay)
         return this
     }
 
@@ -89,8 +88,8 @@ open class Flow(protected val packageContext: Context) : Launchable {
      */
     @JvmOverloads
     fun setOrigin(tag: String, entryRelay: EntryRelay? = null): Flow {
-        mOriginTag = tag
-        mEntryRelay = entryRelay
+        originTag = tag
+        this.entryRelay = entryRelay
         return this
     }
 
@@ -108,14 +107,14 @@ open class Flow(protected val packageContext: Context) : Launchable {
      * @return this to allow for fluent syntax
      */
     fun setExitRelay(exitRelay: ExitRelay): Flow {
-        mExitRelay = exitRelay
+        this.exitRelay = exitRelay
         return this
     }
 
 
-    fun setExitRelay(block: (Context, Flow) -> String): Flow {
+    fun setExitRelay(block: (Context, Flow) -> String?): Flow {
         return setExitRelay(object : ExitRelay {
-            override fun getExitNode(context: Context, flow: Flow): String {
+            override fun getExitNode(context: Context, flow: Flow): String? {
                 return block(context, flow)
             }
         })
@@ -126,7 +125,7 @@ open class Flow(protected val packageContext: Context) : Launchable {
      * @return this to allow for fluent syntax
      */
     fun newTask(): Flow {
-        mIsNewTask = true
+        isNewTask = true
         return this
     }
 
@@ -137,11 +136,7 @@ open class Flow(protected val packageContext: Context) : Launchable {
      */
     fun addToFlowBundle(bundle: Bundle?): Flow {
         bundle?.let {
-            if (flowBundle == null) {
-                flowBundle = it
-            } else {
-                flowBundle!!.putAll(it)
-            }
+            flowBundle.putAll(it)
         }
         return this
     }
@@ -152,7 +147,7 @@ open class Flow(protected val packageContext: Context) : Launchable {
      * @return this to allow for fluent syntax
      */
     fun setObserver(o: FlowObserver): Flow {
-        mObserver = o
+        observer = o
         return this
     }
 
@@ -170,12 +165,12 @@ open class Flow(protected val packageContext: Context) : Launchable {
      */
     fun startForResult(context: Context, bundle: Bundle?, requestCode: Int) {
         addToFlowBundle(bundle)
-        mRequestCode = requestCode
-        val tag: String? = mEntryRelay?.getEntryNode(context, this, flowBundle) ?: mOriginTag
+        this.requestCode = requestCode
+        val tag: String? = entryRelay?.getEntryNode(context, this, flowBundle) ?: originTag
         if (tag == null) {
             terminate(Activity.RESULT_CANCELED, null)
         } else {
-            jumpTo(tag, context, bundle, if (mIsNewTask) Launchable.NEW_TASK_FLAGS else 0)
+            jumpTo(tag, context, bundle, if (isNewTask) Launchable.NEW_TASK_FLAGS else 0)
         }
     }
 
@@ -204,7 +199,7 @@ open class Flow(protected val packageContext: Context) : Launchable {
             bundleCopy = fullBundle
         }
         if (node.relay == null) {
-            mObserver?.let {
+            observer?.let {
                 if (node.launchable is Flow) {
                     it.nextFlow(this, node.launchable)
                 } else {
@@ -212,7 +207,7 @@ open class Flow(protected val packageContext: Context) : Launchable {
                 }
             }
         }
-        node.launchable.launch(context, bundleCopy, flags, mRequestCode)
+        node.launchable.launch(context, bundleCopy, flags, requestCode)
     }
 
     /**
@@ -240,11 +235,11 @@ open class Flow(protected val packageContext: Context) : Launchable {
         rebase(survivorTag, true)
     }
 
-    internal fun rebase(survivorTag: String, originalReabse: Boolean) {
-        val event = RebaseFlowEvent(id, survivorTag, originalReabse)
+    internal fun rebase(survivorTag: String, originalRebase: Boolean) {
+        val event = RebaseFlowEvent(id, survivorTag, originalRebase)
         EventBus.getDefault().post(event)
-        mOriginTag = survivorTag
-        mObserver?.rebased(this, event)
+        originTag = survivorTag
+        observer?.rebased(this, event)
     }
 
     /**
@@ -253,9 +248,9 @@ open class Flow(protected val packageContext: Context) : Launchable {
      * @see Activity.setResult
      */
     fun terminate(resultCode: Int, resultData: Intent?): String? {
-        val event = TerminateFlowEvent(id, resultCode, resultData!!)
+        val event = TerminateFlowEvent(id, resultCode, resultData)
         EventBus.getDefault().post(event)
-        mObserver?.terminated(this, event)
+        observer?.terminated(this, event)
         return null
     }
 
@@ -263,13 +258,15 @@ open class Flow(protected val packageContext: Context) : Launchable {
      * @return true if the flow will end when the current activity is finished
      */
     internal fun willBackOutWith(context: Context, tag: String): Boolean {
-        if (mOriginTag == null) {
+        if (originTag == null) {
             return false
         }
-        val isAtOrigin = mOriginTag == tag
+        val isAtOrigin = (originTag == tag)
         if (isAtOrigin) {
-            mExitRelay?.let {
-                jumpTo(it.getExitNode(context, this), context)
+            exitRelay?.let { relay ->
+                relay.getExitNode(context, this)?.let {
+                    jumpTo(it, context)
+                } ?: return false
             } ?: return true
         }
         return false
@@ -280,7 +277,7 @@ open class Flow(protected val packageContext: Context) : Launchable {
      * @throws FlowException if the tag is missing
      */
     private fun getAndCheck(tag: String): Node<*> {
-        return mLayout[tag] ?: throw FlowException("No post found with tag: $tag")
+        return layout[tag] ?: throw FlowException("No post found with tag: $tag")
     }
 
     override fun launch(context: Context, bundle: Bundle?, flags: Int, requestCode: Int) {
@@ -288,9 +285,10 @@ open class Flow(protected val packageContext: Context) : Launchable {
     }
 
     override fun equals(other: Any?): Boolean {
-        return if (other !is Flow) {
+        return if (other !is Flow)
             false
-        } else id == other.id
+        else
+            id == other.id
     }
 
     override fun hashCode(): Int {

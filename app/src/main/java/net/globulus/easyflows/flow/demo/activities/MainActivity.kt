@@ -37,15 +37,14 @@ class MainActivity : BaseActivity() {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == Constants.REQUEST_MOVIES && resultCode == RESULT_OK) {
+        if (requestCode == Constants.REQUEST_MOVIES) {
             data?.let {
-//                val movies = it.getStringArrayExtra(Constants.BUNDLE_MOVIES)
-//                for (movie in movies) {
-                val movie = it.getStringExtra(Constants.BUNDLE_GENRE)
+                val movies = it.getStringArrayExtra(Constants.BUNDLE_MOVIES)
+                for (movie in movies) {
                     EasyPrefs.addToPurchasedMovies(this, movie)
-//                }
-                (recyclerView.adapter as? Adapter)?.refresh(this)
+                }
             }
+            (recyclerView.adapter as? Adapter)?.refresh(this)
         }
     }
 

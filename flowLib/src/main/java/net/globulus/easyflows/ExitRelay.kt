@@ -10,5 +10,5 @@ interface ExitRelay {
     /**
      * @return The exit node tag for the given flow.
      */
-    fun getExitNode(context: Context, flow: Flow): String
+    fun getExitNode(context: Context, flow: Flow): String?
 }

@@ -8,11 +8,12 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_genres.*
+import net.globulus.easyflows.BundleProducer
 import net.globulus.easyflows.FlowManager
 import net.globulus.easyflows.flow.demo.R
 import net.globulus.easyflows.flow.demo.utils.Constants
 
-class GenresActivity : BaseActivity() {
+class GenresActivity : BaseActivity(), BundleProducer {
 
     private lateinit var genre: String
 
@@ -34,7 +35,7 @@ class GenresActivity : BaseActivity() {
         }
     }
 
-    fun getGenreBundle() = Bundle().apply { putString(Constants.BUNDLE_GENRE, genre) }
+    override val bundle get() = Bundle().apply { putString(Constants.BUNDLE_GENRE, genre) }
 
     private class Adapter(
         context: Context,

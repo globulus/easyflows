@@ -15,5 +15,5 @@ interface Relay<C : Checklist> {
      * @param checklist Checklist used to define the branching.
      * @return The tag of the next element in the Flow.
      */
-    fun nextNode(flow: Flow, activity: Activity, checklist: C): String
+    fun nextNode(flow: Flow, activity: Activity, checklist: C): String?
 }

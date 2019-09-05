@@ -1,0 +1,6 @@
+<resources>
+    <dimen name="fab_margin">16dp</dimen>
+    <dimen name="button_width">100dp</dimen>
+    <dimen name="input_width">200dp</dimen>
+    <dimen name="small_margin">15dp</dimen>
+</resources>

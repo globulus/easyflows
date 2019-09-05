@@ -13,7 +13,7 @@ import java.util.concurrent.LinkedBlockingDeque
  * Drives the app flows through its shared instance, allowing for extremely simple flow management
  * from within the app itself.
  */
-object FlowManager : Flow.Observer {
+object FlowManager : FlowObserver {
 
     private val mActiveFlows: BlockingDeque<Flow> = LinkedBlockingDeque()
     private val mLinkedFlows: ConcurrentMap<Flow, Flow> = ConcurrentHashMap()
@@ -52,7 +52,7 @@ object FlowManager : Flow.Observer {
     @Synchronized
     fun start(flow: Flow, context: Context, bundle: Bundle?) {
         prepFlowStart(flow)
-        flow.start(context, bundle!!)
+        flow.start(context, bundle)
     }
 
     /**

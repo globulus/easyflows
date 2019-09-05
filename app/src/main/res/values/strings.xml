@@ -1,3 +1,26 @@
 <resources>
     <string name="app_name">FlowDemo</string>
+    <string name="title_activity_ftue">FtueActivity</string>
+    <string name="login">Login</string>
+    <string name="register">Register</string>
+    <string name="flow_demo">Flow demo</string>
+    <string name="title_activity_login">LoginActivity</string>
+    <string name="log_in_automatically">Log in automatically</string>
+    <string name="title_activity_register">RegisterActivity</string>
+    <string name="select_dob">Select DOB</string>
+    <string name="terms_of_use">Terms of Use</string>
+    <string name="terms_of_use_text">Here are some terms of use you\'re supposed to agree to.\n
+        This screen won\'t show up again unless you restart the app.
+    </string>
+    <string name="agree">Agree</string>
+    <string name="parental_consent_text">Since you\'re a minor, we\'re supposed to ask if your legal guardian agrees with you using this app.</string>
+    <string name="parental_consent">Parental Consent</string>
+    <string name="title_activity_genres">GenresActivity</string>
+    <string name="genres">Genres</string>
+
+    <string-array name="genres">
+        <item>Action</item>
+        <item>Comedy</item>
+        <item>Horror</item>
+    </string-array>
 </resources>

@@ -12,10 +12,10 @@ import java.util.*
  * Post is an element in a [Flow], marking an Activity that can be launched when a Flow node
  * is visited. Essentially a wrapper around an Intent that also implements [Launchable].
  */
-class Post<T : Activity> private constructor(
+class Post<T> private constructor(
     private val mContext: Context,
     private val mLocus: Class<out Activity>
-) : Launchable {
+) : Launchable where T : Activity, T : Checklist {
 
     private var mFlags = 0
     private var mRebase = false
@@ -63,7 +63,7 @@ class Post<T : Activity> private constructor(
         }
     }
 
-    class Builder<T : Activity>
+    class Builder<T>
     /**
      * @param context Context for creating intent that launches the Activity.
      * @param locus Activity class for the intent.
@@ -71,7 +71,7 @@ class Post<T : Activity> private constructor(
         (
         context: Context,
         locus: Class<T>
-    ) {
+    ) where T : Activity , T: Checklist {
 
         private val mPost: Post<T> = Post(context, locus)
 

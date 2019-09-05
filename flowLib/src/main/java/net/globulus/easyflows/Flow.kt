@@ -12,18 +12,19 @@ import java.util.*
  * defined by [Relay]s. Flow elements must be [Launchable]s, which means either
  * [Post]s or other Flows. Each Flow element must have a unique tag associated with it.
  */
-class Flow : Launchable {
+open class Flow(protected val packageContext: Context) : Launchable {
 
     /**
      * @return The UUID of this flow.
      */
     val id: String = UUID.randomUUID().toString()
+
     private val mLayout: MutableMap<String, Node<*>> = HashMap()
     private var mOriginTag: String? = null
     private var mIsNewTask: Boolean = false
     private var mEntryRelay: EntryRelay? = null
     private var mExitRelay: ExitRelay? = null
-    private var mObserver: Observer? = null
+    private var mObserver: FlowObserver? = null
     private var mRequestCode: Int = 0
 
     // TODO reconsider making flow bundle unmodifiable or returning a copy of it to prevent
@@ -43,10 +44,41 @@ class Flow : Launchable {
      * @param <C>
      * @return this to allow for fluent syntax
     </C></L> */
-    fun <L : Launchable, C : Checklist> put(tag: String, launchable: L, relay: Relay<C>): Flow {
+    fun <L : Launchable, C : Checklist> put(tag: String, launchable: L, relay: Relay<C>?): Flow {
         mLayout[tag] = Node(launchable, relay)
         return this
     }
+
+    /**
+     * Convenience method to add a [Post] whose [locus][Post.mLocus] is the same as the [Relay]
+     * following it.
+     * @see put
+     * @return this to allow for fluent syntax
+     */
+    fun <T> put(tag: String, post: Post<T>, relay: Relay<T>?)
+            : Flow where T : Activity, T : Checklist {
+        return put(tag, launchable = post, relay = relay)
+    }
+
+    fun <T> put(tag: String, post: Post<T>, relayBlock: (Flow, T) -> String?)
+            : Flow where T : Activity, T : Checklist {
+        return put(tag, post, object : Relay<T> {
+            override fun nextNode(flow: Flow, activity: Activity, checklist: T): String? {
+                return relayBlock(flow, checklist)
+            }
+        })
+    }
+
+    fun <T> put(tag: String, post: Post<T>): Flow where T : Activity, T : Checklist {
+        return put(tag, post, relay = null)
+    }
+
+    /**
+     * Convenience method to add a [Flow], as the [Relay] behind it is always null.
+     * @see put
+     * @return this to allow for fluent syntax
+     */
+    fun <T : Flow> put(tag: String, flow: T) = put<T, Checklist>(tag, flow, null)
 
     /**
      * Sets the entry point into a flow. If entryRelay != null, sets the entry point
@@ -62,6 +94,14 @@ class Flow : Launchable {
         return this
     }
 
+    fun setOrigin(tag: String, block: (Context, Flow, Bundle?) -> String): Flow {
+        return setOrigin(tag, object : EntryRelay {
+            override fun getEntryNode(context: Context, flow: Flow, bundle: Bundle?): String {
+                return block(context, flow, bundle)
+            }
+        })
+    }
+
     /**
      * Sets the [exit relay][ExitRelay].
      * @param exitRelay
@@ -70,6 +110,15 @@ class Flow : Launchable {
     fun setExitRelay(exitRelay: ExitRelay): Flow {
         mExitRelay = exitRelay
         return this
+    }
+
+
+    fun setExitRelay(block: (Context, Flow) -> String): Flow {
+        return setExitRelay(object : ExitRelay {
+            override fun getExitNode(context: Context, flow: Flow): String {
+                return block(context, flow)
+            }
+        })
     }
 
     /**
@@ -102,7 +151,7 @@ class Flow : Launchable {
      * TODO consider refactoring to addObserver to allow for multiple observers.
      * @return this to allow for fluent syntax
      */
-    fun setObserver(o: Observer): Flow {
+    fun setObserver(o: FlowObserver): Flow {
         mObserver = o
         return this
     }
@@ -110,7 +159,7 @@ class Flow : Launchable {
     /**
      * Starts the flow from a supplied context with the passed bundle.
      */
-    fun start(context: Context, bundle: Bundle) {
+    fun start(context: Context, bundle: Bundle?) {
         startForResult(context, bundle, Launchable.NO_REQUEST_CODE)
     }
 
@@ -203,10 +252,11 @@ class Flow : Launchable {
      * with the given result code and result data.
      * @see Activity.setResult
      */
-    fun terminate(resultCode: Int, resultData: Intent?) {
+    fun terminate(resultCode: Int, resultData: Intent?): String? {
         val event = TerminateFlowEvent(id, resultCode, resultData!!)
         EventBus.getDefault().post(event)
         mObserver?.terminated(this, event)
+        return null
     }
 
     /**
@@ -251,31 +301,6 @@ class Flow : Launchable {
         internal val launchable: Launchable,
         internal val relay: Relay<C>?
     )
-
-    /**
-     * Used to monitor flow events.
-     */
-    interface Observer {
-        /**
-         * Triggered when a flow reaches its end.
-         */
-        fun finished(flow: Flow)
-
-        /**
-         * Triggered when one flow starts another.
-         */
-        fun nextFlow(current: Flow, next: Flow)
-
-        /**
-         * Triggered when a flow is rebased by an [event][RebaseFlowEvent].
-         */
-        fun rebased(flow: Flow, event: RebaseFlowEvent)
-
-        /**
-         * Triggered when a flow is terminated by an [event][TerminateFlowEvent].
-         */
-        fun terminated(flow: Flow, event: TerminateFlowEvent)
-    }
 
     companion object {
         const val INTENT_FLOW_ID = "flow_intent_flow_id"

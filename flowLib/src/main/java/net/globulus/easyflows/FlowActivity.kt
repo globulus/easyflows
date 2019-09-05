@@ -10,7 +10,7 @@ import org.greenrobot.eventbus.Subscribe
  * drive the flows. All activities invoked in flows should generally subclass this class or its
  * descendant, otherwise FlowManager functionality will be limited to driving flows forward only.
  */
-class FlowActivity : AppCompatActivity() {
+open class FlowActivity : AppCompatActivity(), Checklist {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

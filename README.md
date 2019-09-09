@@ -31,7 +31,7 @@ allprojects {
 ```
 ```gradle
 dependencies {
-   compile 'com.github.globulus:easyflows:-SNAPSHOT'
+   implementation 'com.github.globulus:easyflows:-SNAPSHOT'
 }
 ```
 
@@ -46,7 +46,7 @@ Here's some library-specific terminology:
 * A **Node** represents an app screen, or an entry point to another flow.
 * A **Relay** is the branching after a node, i.e it tells which node comes after the current one under given circumstances.
 * A **Checklist** is the abstract API of a node, an interface consisting of parameter-less boolean methods that make reading the flow pathways simple and readable from inside the flow class, while encapsulating the relevant data and logic inside the nodes themselves.
-* A **Post** is a glorified intent packed with additional data that can be used as a flow node, and that launches an Activity when invoked. Posts are [Launchable](flowLib/src/main/java/net/globulus/flow/Launchable.kt), much like Flows themselves.
+* A **Post** is a glorified intent packed with additional data that can be used as a flow node, and that launches an Activity when invoked. Posts are [Launchable](flowLib/src/main/java/net/globulus/easyflows/Launchable.kt), much like Flows themselves.
 
 This may sound like a lot but it will all come together nicely when you look at the code sample in the following section.
 
@@ -59,7 +59,7 @@ Here's a visual representation of a flow with 4 posts and two relays (transition
 
 A flow class defines the *layout of the flow*. The goal of the Flow class is for it to be readable basically like pseudocode, i.e someone who isn't necessarily proficient in Java or Kotlin should be able to convert the code file into a chart that graphically represents the same flow.
 
-A flow class must extend [Flow](flowLib/src/main/java/net/globulus/flow/Flow.kt).
+A flow class must extend [Flow](flowLib/src/main/java/net/globulus/easyflows/Flow.kt).
 
 Use the *put* method to add nodes to a Flow, as well as the branching that follows them. The ordering of nodes is technically not important, but it's a good practice to lay them out sequentially for readability purposes.
 
@@ -124,11 +124,11 @@ Here's a quick rundown of Post.Builder and its methods:
 * *rebase* and *rebaseWhen* tell the the flow should be (un)conditionally [rebased](#rebase) when the Activity is launched.
 * *passIntentBundle* automatically adds the Intent extras of the current Activity to the one being launched (via the Post).
 * Several overloaded variants of *putExtra* allow for easily passing data into the launched Activity, much like you'd do with an Intent.
-    + Since Post are created when Flows are, the data passed via *putExtra* is determined when a Flow is created, and not when the Post is really invoked. To allow for evaluation of extras when the Post is actually launched, use the *putExtra* overload that takes a [ValueProducer](flowLib/src/main/java/net/globulus/flow/ValueProducer.kt).
+    + Since Post are created when Flows are, the data passed via *putExtra* is determined when a Flow is created, and not when the Post is really invoked. To allow for evaluation of extras when the Post is actually launched, use the *putExtra* overload that takes a [ValueProducer](flowLib/src/main/java/net/globulus/easyflows/ValueProducer.kt).
 
 #### Flow Activities
 
-All activities that are triggered by flow Posts should subclass [FlowActivity](flowLib/src/main/java/net/globulus/flow/FlowActivity.kt). This allows flow activities to respond to flow events, such as the flow being [terminated](#terminate) or [rebased](#rebase). It also allows the FlowManager to know if a flow has been finished by backing out of it.
+All activities that are triggered by flow Posts should subclass [FlowActivity](flowLib/src/main/java/net/globulus/easyflows/FlowActivity.kt). This allows flow activities to respond to flow events, such as the flow being [terminated](#terminate) or [rebased](#rebase). It also allows the FlowManager to know if a flow has been finished by backing out of it.
 
 The *FlowActivity* class implements *Checklist* interface, saving you the trouble of manually implementing one for nodes that don't have a branching after them.
 
@@ -136,7 +136,7 @@ The *FlowActivity* class implements *Checklist* interface, saving you the troubl
 
 Relays represent branchings after a node, telling the flow which way to go when the flow [proceeds](#proceed).
 
-Code-wise, a [Relay](flowLib/src/main/java/net/globulus/flow/Relay.kt) is a functional interface whose sole method, *nextNode*, returns a String representing the tag of the node the Flow should proceed to. It takes three parameters:
+Code-wise, a [Relay](flowLib/src/main/java/net/globulus/easyflows/Relay.kt) is a functional interface whose sole method, *nextNode*, returns a String representing the tag of the node the Flow should proceed to. It takes three parameters:
 
    * the current Flow *f*,
    * the current Activity *a*, and
@@ -152,7 +152,7 @@ Checklists are an abstract API that tell us how to navigate the flow from a cert
 
 Checklists exist to force the developer to contain all the data and logic in that particular node, as opposed to leaking them into the Flow class itself, which would make it cluttered and defy the notion that a Flow class should be simple and almost read like pseudocode. In other words, we use Checklists to detach the flow branching rules (used in Flow class) from their implementation in the node Activity.
 
-From the code perspective, a Checklist is just an interface that extends [Checklist](flowLib/src/main/java/net/globulus/flow/Checklist.kt). Naturally, you can whatever you want in it, but ideally a Checklist should only contain *parameter-less methods that return a boolean*, which in Kotlin are syntactically equal to a *Boolean val*:
+From the code perspective, a Checklist is just an interface that extends [Checklist](flowLib/src/main/java/net/globulus/easyflows/Checklist.kt). Naturally, you can whatever you want in it, but ideally a Checklist should only contain *parameter-less methods that return a boolean*, which in Kotlin are syntactically equal to a *Boolean val*:
 
 ```kotlin
 interface SignupChecklist : Checklist {
@@ -189,7 +189,7 @@ override val hasPhoneNumber
 
 #### Entry Relay
 
-A Flow can specify an [EntryRelay](flowLib/src/main/java/net/globulus/flow/EntryRelay.kt), which allows it to dynamically decide what should its origin node be.
+A Flow can specify an [EntryRelay](flowLib/src/main/java/net/globulus/easyflows/EntryRelay.kt), which allows it to dynamically decide what should its origin node be.
 
 EntryRelay takes three params - the flow, a context, and the bundle passed to the flow when it was started - and returns the origin node's tag based on that info.
 
@@ -197,13 +197,13 @@ An EntryRelay can be used to decide that a flow was wrongly started or that the 
 
 #### Exit Relay
 
-A Flow can specify an [ExitRelay](flowLib/src/main/java/net/globulus/flow/ExitRelay.kt) in order to jump to a node in the case of flow finishing due to backing out. In order words, if you backtrack through the flow to its origin node, press back again, it will use the ExitRelay to figure out if it should jump to another node instead of finishing the flow.
+A Flow can specify an [ExitRelay](flowLib/src/main/java/net/globulus/easyflows/ExitRelay.kt) in order to jump to a node in the case of flow finishing due to backing out. In order words, if you backtrack through the flow to its origin node, press back again, it will use the ExitRelay to figure out if it should jump to another node instead of finishing the flow.
 
 An example use case for ExitRelay would be if you have a flow that always redirects, i.e going forward through the flow or backing out of it always takes you to a screen that doesn't correspond to the screen whence the flow was started.
 
 ### Flow manager
 
-Although you can launch and monitor Flows directly, it's much more convenient to use the [FlowManager](flowLib/src/main/java/net/globulus/flow/FlowManager.kt) singleton. Basically, it allows you to easily perform the following tasks:
+Although you can launch and monitor Flows directly, it's much more convenient to use the [FlowManager](flowLib/src/main/java/net/globulus/easyflows/FlowManager.kt) singleton. Basically, it allows you to easily perform the following tasks:
 
 * [Start a flow](#start), with or without a bundle, with an [option of returning a result](#returning-results-from-flows).
 * [Move forward or backward](#proceed) within a flow without actually having to know anything about the ongoing flow, or its current state.
@@ -247,7 +247,7 @@ The *FlowManager#proceed(Activity)* method will move the current flow forward - 
 }
 ```
 
-In order for the *proceed* method to work, a [TagActivityMapper instance](flowLib/src/main/java/net/globulus/flow/TagActivityMapper.kt) must be set for the *FlowManager* singleton. Its purpose is to map Activity classes to their node tags. The *TagActivityMapper* should be set before you start a flow, ideally in your custom *Application#onCreate*, or the *onCreate* of your first Activity.
+In order for the *proceed* method to work, a [TagActivityMapper instance](flowLib/src/main/java/net/globulus/easyflows/TagActivityMapper.kt) must be set for the *FlowManager* singleton. Its purpose is to map Activity classes to their node tags. The *TagActivityMapper* should be set before you start a flow, ideally in your custom *Application#onCreate*, or the *onCreate* of your first Activity.
 
 #### Terminate
 

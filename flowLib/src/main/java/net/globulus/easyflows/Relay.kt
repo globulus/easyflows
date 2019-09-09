@@ -5,7 +5,7 @@ import android.app.Activity
 /**
  * Defines a switch/branching that a [Flow] element uses to decide its successor.
  * @param <C> The Checklist used to define the Flow branching.
-</C> */
+*/
 @FunctionalInterface
 interface Relay<C : Checklist> {
 

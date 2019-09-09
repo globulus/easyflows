@@ -142,7 +142,7 @@ Code-wise, a [Relay](flowLib/src/main/java/net/globulus/easyflows/Relay.kt) is a
    * the current Activity *a*, and
    * the [checklist](#checklists) describing the branching conditions.
    
-Due to the way FlowManager works, *a* and *c* are always going to point to the same instance, i.e the Activity is required to implement the Checklist the Relay is checking against.
+Due to the way FlowManager works, *a* and *c* are always going to point to the same instance, i.e the Activity is required to implement the Checklist the Relay is checking against. Because of this, there's a convenience *put* overload that takes in a block of *(Flow, Activity)*, where Activity is also a Checklist. That example is used throughout the demo app. 
 
 Check out the [following section](#checklists) for some code samples.
 
@@ -217,7 +217,11 @@ The *FlowManager* will make sure that all of these actions are valid and that th
 
 Each flow has a bundle associated with it that's available to all of its nodes. Basically, whenever a Launchable (Post or another Flow) is launched within a Flow, it gets the current Flow bundle mixed in with other extras.
 
-You may start a flow with a bundle, using *FlowManager#start(Flow, Context, Bundle)*, otherwise an empty bundle will be assigned to it. You may add 
+You may start a flow with a bundle, using *FlowManager#start(Flow, Context, Bundle)*, otherwise an empty bundle will be assigned to it. You may add data to the flow bundle at any point using *Flow#addToFlowBundle(Bundle)*, and read that data using *Flow#flowBundle* or *FlowManager#currentBundle*.
+
+##### BundleProducer
+
+The [BundleProducer](#flowLib/src/main/java/net/globulus/easyflows/BundleProducer.kt) interface tells that an Activity can return a bundle of some kind. When an Activity that implements this interface is used to start a Flow or a Post, its bundle is automatically added to the parameter bundle of the Flow/Post being started. Check out the demo app PurchaseFlow for a sample usage.
 
 #### Start
 

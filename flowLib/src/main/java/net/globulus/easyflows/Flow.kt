@@ -255,6 +255,18 @@ open class Flow(protected val packageContext: Context) : Launchable {
     }
 
     /**
+     * Convenience method for terminating without returning data.
+     * @see terminate
+     */
+    fun terminate() = terminate(Activity.RESULT_CANCELED, null)
+
+    /**
+     * Just a prettier and more straightforward name for terminating with result data.
+     * @see terminate
+     */
+    fun finishWithResult(resultCode: Int, resultData: Intent?) = terminate(resultCode, resultData)
+
+    /**
      * @return true if the flow will end when the current activity is finished
      */
     internal fun willBackOutWith(context: Context, tag: String): Boolean {

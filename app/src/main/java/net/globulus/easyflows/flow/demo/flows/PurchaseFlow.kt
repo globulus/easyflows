@@ -45,7 +45,7 @@ class PurchaseFlow(
                     FlowConstants.SHOP_CONFIRM
                 }
                 fromRegister -> FlowConstants.MAIN
-                else -> f.terminate(Activity.RESULT_CANCELED, null)
+                else -> f.terminate()
             }
         }
 
@@ -58,7 +58,7 @@ class PurchaseFlow(
                 saveSelectionToPrefs(a)
                 FlowConstants.MAIN
             } else {
-                f.terminate(Activity.RESULT_OK, Intent().apply { putExtras(f.flowBundle) })
+                f.finishWithResult(Activity.RESULT_OK, Intent().apply { putExtras(f.flowBundle) })
             }
         }
 

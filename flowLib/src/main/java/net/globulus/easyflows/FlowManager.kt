@@ -60,9 +60,17 @@ object FlowManager : FlowObserver {
      */
     @Synchronized
     fun startForResult(flow: Flow, activity: Activity, requestCode: Int) {
+        startForResult(flow, activity, null, requestCode)
+    }
+
+    @Synchronized
+    fun startForResult(flow: Flow,
+                       activity: Activity,
+                       bundle: Bundle?,
+                       requestCode: Int) {
         prepFlowStart(flow)
         originalLaunchContexts[flow] = activity
-        flow.startForResult(activity, null, requestCode)
+        flow.startForResult(activity, bundle, requestCode)
     }
 
     private fun prepFlowStart(flow: Flow) {
@@ -126,7 +134,7 @@ object FlowManager : FlowObserver {
      * @see .terminate
      */
     @Synchronized
-    fun switchTo(flow: Flow, context: Context, bundle: Bundle) {
+    fun switchTo(flow: Flow, context: Context, bundle: Bundle?) {
         if (activeFlows.isNotEmpty()) {
             val current = activeFlows.peek()
             current.terminate(Activity.RESULT_CANCELED, null)

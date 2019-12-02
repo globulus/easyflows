@@ -5,8 +5,8 @@ import kotlinx.android.synthetic.main.activity_ftue.*
 import net.globulus.easyflows.FlowManager
 import net.globulus.easyflows.flow.demo.R
 import net.globulus.easyflows.flow.demo.flows.FlowConstants
-import net.globulus.easyflows.flow.demo.flows.LoginFlow
-import net.globulus.easyflows.flow.demo.flows.RegisterFlow
+import net.globulus.easyflows.flow.demo.flows.loginFlow
+import net.globulus.easyflows.flow.demo.flows.registerFlow
 import net.globulus.easyprefs.EasyPrefs
 
 class FtueActivity : BaseActivity() {
@@ -20,11 +20,11 @@ class FtueActivity : BaseActivity() {
         FlowManager.setTagActivityMapper(FlowConstants.MAPPER) // TODO maybe move to custom App impl
 
         login.setOnClickListener {
-            FlowManager.start(LoginFlow(this), this)
+            FlowManager.start(loginFlow(), this)
         }
 
         register.setOnClickListener {
-            FlowManager.start(RegisterFlow(this), this)
+            FlowManager.start(registerFlow(), this)
         }
     }
 }

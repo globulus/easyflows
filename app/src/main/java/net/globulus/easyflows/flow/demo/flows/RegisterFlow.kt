@@ -1,49 +1,41 @@
 package net.globulus.easyflows.flow.demo.flows
 
 import android.content.Context
-import net.globulus.easyflows.Flow
-import net.globulus.easyflows.Post
+import net.globulus.easyflows.flow
 import net.globulus.easyflows.flow.demo.activities.ParentalConsentActivity
 import net.globulus.easyflows.flow.demo.activities.RegisterActivity
 import net.globulus.easyflows.flow.demo.activities.TermsOfUseActivity
+import net.globulus.easyflows.flow.demo.flows.FlowConstants.PARENTAL_CONSENT
+import net.globulus.easyflows.flow.demo.flows.FlowConstants.PURCHASE
+import net.globulus.easyflows.flow.demo.flows.FlowConstants.REGISTER
+import net.globulus.easyflows.flow.demo.flows.FlowConstants.TERMS_OF_USE
+import net.globulus.easyflows.origin
+import net.globulus.easyflows.post
 import net.globulus.easyprefs.EasyPrefs
 
-class RegisterFlow(packageContext: Context) : Flow(packageContext) {
-    init {
-        setOrigin(ORIGIN) { c, _, _ ->
-            if (EasyPrefs.getAgreedToTermsOfUse(c))
-                ORIGIN
-            else
-                FlowConstants.TERMS_OF_USE
-        }
+private const val ORIGIN = REGISTER
 
-        put(FlowConstants.TERMS_OF_USE,
-            Post.Builder(packageContext, TermsOfUseActivity::class.java)
-                .build()
-        ) { _, a ->
-            a.finish()
+fun Context.registerFlow() = flow {
+    origin(ORIGIN) { c, _, _ ->
+        if (EasyPrefs.getAgreedToTermsOfUse(c))
             ORIGIN
-        }
-
-        put(FlowConstants.REGISTER,
-            Post.Builder(packageContext, RegisterActivity::class.java)
-                .build()
-        ) { _, a ->
-            if (a.isMinor)
-                FlowConstants.PARENTAL_CONSENT
-            else
-                FlowConstants.PURCHASE
-        }
-
-        put(FlowConstants.PARENTAL_CONSENT,
-            Post.Builder(packageContext, ParentalConsentActivity::class.java)
-                .build()
-        ) { _, _ -> FlowConstants.PURCHASE }
-
-        put(FlowConstants.PURCHASE, PurchaseFlow(packageContext, FlowConstants.Source.REGISTER))
+        else
+            TERMS_OF_USE
     }
 
-    companion object {
-        private const val ORIGIN = FlowConstants.REGISTER
+    TERMS_OF_USE marks post(TermsOfUseActivity::class.java) followedBy { _, a ->
+        a.finish()
+        ORIGIN
     }
+
+    REGISTER marks post(RegisterActivity::class.java) followedBy { _, a ->
+        if (a.isMinor)
+            PARENTAL_CONSENT
+        else
+            PURCHASE
+    }
+
+    PARENTAL_CONSENT marks post(ParentalConsentActivity::class.java) followedBy PURCHASE
+
+    PURCHASE marks purchaseFlow(FlowConstants.Source.REGISTER)
 }

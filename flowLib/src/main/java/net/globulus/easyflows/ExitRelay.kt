@@ -12,3 +12,5 @@ interface ExitRelay {
      */
     fun getExitNode(context: Context, flow: Flow): String?
 }
+
+typealias ExitRelayBlock = (Context, Flow) -> String?

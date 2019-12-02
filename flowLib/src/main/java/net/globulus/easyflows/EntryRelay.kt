@@ -13,3 +13,5 @@ interface EntryRelay {
      */
     fun getEntryNode(context: Context, flow: Flow, bundle: Bundle?): String
 }
+
+typealias EntryRelayBlock = (Context, Flow, Bundle?) -> String

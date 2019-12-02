@@ -12,7 +12,7 @@ import java.util.*
  * defined by [Relay]s. Flow elements must be [Launchable]s, which means either
  * [Post]s or other Flows. Each Flow element must have a unique tag associated with it.
  */
-open class Flow(protected val packageContext: Context) : Launchable {
+open class Flow(val packageContext: Context) : Launchable {
 
     /**
      * @return The UUID of this flow.
@@ -48,6 +48,26 @@ open class Flow(protected val packageContext: Context) : Launchable {
         return this
     }
 
+    infix fun <L : Launchable> String.marks(launchable: L): Pair<String, L> {
+        put<L, Checklist>(this, launchable, null)
+        return this to launchable
+    }
+
+    infix fun <L : Launchable, C : Checklist> Pair<String, L>.followedBy(relay: Relay<C>)
+            = put(this.first, this.second, relay)
+
+    infix fun <T> Pair<String, Post<T>>.followedBy(relay: RelayBlock<T>): Flow
+            where T : Activity, T : Checklist {
+        return put(this.first, this.second, relay)
+    }
+
+    infix fun <L : Launchable> Pair<String, L>.followedBy(nextTag: String)
+            = put(this.first, this.second, object : Relay<Checklist> {
+        override fun nextNode(flow: Flow, activity: Activity, checklist: Checklist): String? {
+            return nextTag
+        }
+    })
+
     /**
      * Convenience method to add a [Post] whose [locus][Post.mLocus] is the same as the [Relay]
      * following it.
@@ -59,8 +79,8 @@ open class Flow(protected val packageContext: Context) : Launchable {
         return put(tag, launchable = post, relay = relay)
     }
 
-    fun <T> put(tag: String, post: Post<T>, relayBlock: (Flow, T) -> String?)
-            : Flow where T : Activity, T : Checklist {
+    fun <T> put(tag: String, post: Post<T>, relayBlock: RelayBlock<T>): Flow
+            where T : Activity, T : Checklist {
         return put(tag, post, object : Relay<T> {
             override fun nextNode(flow: Flow, activity: Activity, checklist: T): String? {
                 return relayBlock(flow, checklist)
@@ -93,7 +113,7 @@ open class Flow(protected val packageContext: Context) : Launchable {
         return this
     }
 
-    fun setOrigin(tag: String, block: (Context, Flow, Bundle?) -> String): Flow {
+    fun setOrigin(tag: String, block: EntryRelayBlock): Flow {
         return setOrigin(tag, object : EntryRelay {
             override fun getEntryNode(context: Context, flow: Flow, bundle: Bundle?): String {
                 return block(context, flow, bundle)
@@ -106,16 +126,18 @@ open class Flow(protected val packageContext: Context) : Launchable {
      * @param exitRelay
      * @return this to allow for fluent syntax
      */
-    fun setExitRelay(exitRelay: ExitRelay): Flow {
+    fun setExitRelay(exitRelay: ExitRelay? = null): Flow {
         this.exitRelay = exitRelay
         return this
     }
 
 
-    fun setExitRelay(block: (Context, Flow) -> String?): Flow {
-        return setExitRelay(object : ExitRelay {
-            override fun getExitNode(context: Context, flow: Flow): String? {
-                return block(context, flow)
+    fun setExitRelay(block: ExitRelayBlock? = null): Flow {
+        return setExitRelay(block?.let {
+            object : ExitRelay {
+                override fun getExitNode(context: Context, flow: Flow): String? {
+                    return it(context, flow)
+                }
             }
         })
     }
@@ -317,3 +339,5 @@ open class Flow(protected val packageContext: Context) : Launchable {
         const val INTENT_ACTIVITY_TAG = "flow_intent_activity_tag"
     }
 }
+
+private typealias RelayBlock<T> = (Flow, T) -> String?

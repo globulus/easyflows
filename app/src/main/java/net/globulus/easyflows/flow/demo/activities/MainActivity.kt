@@ -11,7 +11,7 @@ import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_main.*
 import net.globulus.easyflows.FlowManager
 import net.globulus.easyflows.flow.demo.R
-import net.globulus.easyflows.flow.demo.flows.PurchaseFlow
+import net.globulus.easyflows.flow.demo.flows.purchaseFlow
 import net.globulus.easyflows.flow.demo.utils.Constants
 import net.globulus.easyprefs.EasyPrefs
 
@@ -31,7 +31,7 @@ class MainActivity : BaseActivity() {
         }
 
         fab.setOnClickListener {
-           FlowManager.startForResult(PurchaseFlow(this),
+           FlowManager.startForResult(purchaseFlow(),
                this, Constants.REQUEST_MOVIES)
         }
     }

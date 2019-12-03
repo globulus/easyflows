@@ -2,8 +2,8 @@ package net.globulus.easyflows.flow.demo.activities
 
 import android.os.Bundle
 import kotlinx.android.synthetic.main.activity_login.*
-import net.globulus.easyflows.FlowManager
 import net.globulus.easyflows.flow.demo.R
+import net.globulus.easyflows.proceed
 
 class LoginActivity : BaseActivity() {
 
@@ -14,7 +14,7 @@ class LoginActivity : BaseActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         login.setOnClickListener {
-            FlowManager.proceed(this)
+            proceed()
         }
     }
 }

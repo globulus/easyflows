@@ -3,8 +3,8 @@ package net.globulus.easyflows.flow.demo.activities
 import android.os.Bundle
 import kotlinx.android.synthetic.main.activity_login.toolbar
 import kotlinx.android.synthetic.main.activity_parental_consent.*
-import net.globulus.easyflows.FlowManager
 import net.globulus.easyflows.flow.demo.R
+import net.globulus.easyflows.proceed
 
 class ParentalConsentActivity : BaseActivity() {
 
@@ -15,7 +15,7 @@ class ParentalConsentActivity : BaseActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         agree.setOnClickListener {
-            FlowManager.proceed(this)
+            proceed()
         }
     }
 }

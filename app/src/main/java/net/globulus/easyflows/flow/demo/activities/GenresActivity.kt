@@ -9,9 +9,9 @@ import android.view.ViewGroup
 import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_genres.*
 import net.globulus.easyflows.BundleProducer
-import net.globulus.easyflows.FlowManager
 import net.globulus.easyflows.flow.demo.R
 import net.globulus.easyflows.flow.demo.utils.Constants
+import net.globulus.easyflows.proceed
 
 class GenresActivity : BaseActivity(), BundleProducer {
 
@@ -30,7 +30,7 @@ class GenresActivity : BaseActivity(), BundleProducer {
             layoutManager = LinearLayoutManager(activity)
             adapter = Adapter(activity) {
                 genre = it
-                FlowManager.proceed(activity)
+                proceed()
             }
         }
     }

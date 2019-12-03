@@ -3,9 +3,9 @@ package net.globulus.easyflows.flow.demo.activities
 import android.app.DatePickerDialog
 import android.os.Bundle
 import kotlinx.android.synthetic.main.activity_register.*
-import net.globulus.easyflows.FlowManager
 import net.globulus.easyflows.flow.demo.R
 import net.globulus.easyflows.flow.demo.flows.RegisterChecklist
+import net.globulus.easyflows.proceed
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -30,7 +30,7 @@ class RegisterActivity : BaseActivity(), RegisterChecklist {
         }
 
         register.setOnClickListener {
-            FlowManager.proceed(this)
+            proceed()
         }
     }
 

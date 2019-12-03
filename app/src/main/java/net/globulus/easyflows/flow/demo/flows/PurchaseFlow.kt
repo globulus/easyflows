@@ -3,8 +3,7 @@ package net.globulus.easyflows.flow.demo.flows
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import net.globulus.easyflows.exit
-import net.globulus.easyflows.flow
+import net.globulus.easyflows.*
 import net.globulus.easyflows.flow.demo.activities.GenresActivity
 import net.globulus.easyflows.flow.demo.activities.MainActivity
 import net.globulus.easyflows.flow.demo.activities.MoviesActivity
@@ -13,8 +12,6 @@ import net.globulus.easyflows.flow.demo.flows.FlowConstants.GENRES
 import net.globulus.easyflows.flow.demo.flows.FlowConstants.MAIN
 import net.globulus.easyflows.flow.demo.flows.FlowConstants.MOVIES
 import net.globulus.easyflows.flow.demo.flows.FlowConstants.SHOP_CONFIRM
-import net.globulus.easyflows.origin
-import net.globulus.easyflows.post
 
 fun Context.purchaseFlow(source: FlowConstants.Source = FlowConstants.Source.MOVIES) = flow {
     val fromRegister = (source == FlowConstants.Source.REGISTER)
@@ -29,7 +26,7 @@ fun Context.purchaseFlow(source: FlowConstants.Source = FlowConstants.Source.MOV
     MOVIES marks post(MoviesActivity::class.java) followedBy { f, a ->
         when {
             a.hasSelection -> {
-                f.addToFlowBundle(a.bundle)
+                f += a.bundle
                 // Add exit relay in case the user presses back button on rebased activity
                 f.setExitRelay { c, _ ->
                     saveSelectionToPrefs(c)

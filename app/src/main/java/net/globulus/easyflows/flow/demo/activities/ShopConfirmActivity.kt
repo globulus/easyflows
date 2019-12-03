@@ -6,6 +6,7 @@ import kotlinx.android.synthetic.main.activity_shop_confirm.*
 import net.globulus.easyflows.FlowManager
 import net.globulus.easyflows.flow.demo.R
 import net.globulus.easyflows.flow.demo.utils.Constants
+import net.globulus.easyflows.proceed
 import net.globulus.easyprefs.EasyPrefs
 
 class ShopConfirmActivity : BaseActivity() {
@@ -16,7 +17,7 @@ class ShopConfirmActivity : BaseActivity() {
         setSupportActionBar(toolbar)
 
         done.setOnClickListener {
-            FlowManager.proceed(this)
+            proceed()
         }
     }
 

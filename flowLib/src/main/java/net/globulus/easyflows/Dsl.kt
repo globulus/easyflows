@@ -2,6 +2,7 @@ package net.globulus.easyflows
 
 import android.app.Activity
 import android.content.Context
+import android.os.Bundle
 
 fun Context.flow(block: Flow.() -> Unit): Flow {
     return Flow(this).apply(block)
@@ -21,4 +22,16 @@ fun <T> Flow.post(locus: Class<T>, block: (Post.Builder<T>.() -> Unit)? = null):
         builder.apply(it)
     }
     return builder.build()
+}
+
+operator fun Flow.plusAssign(bundle: Bundle?) {
+    addToFlowBundle(bundle)
+}
+
+inline operator fun <reified T> Flow.get(key: String): T? {
+    return flowBundle[key] as? T
+}
+
+fun <T> T.proceed() where T : Activity, T : Checklist {
+    FlowManager.proceed(this)
 }

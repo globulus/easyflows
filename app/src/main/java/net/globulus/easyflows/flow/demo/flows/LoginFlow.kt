@@ -16,21 +16,3 @@ fun Context.loginFlow() = flow {
         newTask()
     }
 }
-
-//class LoginFlow(packageContext: Context) : Flow(packageContext) {
-//    init {
-//        setOrigin(LOGIN)
-//
-//        put(
-//            LOGIN,
-//            Post.Builder(packageContext, LoginActivity::class.java)
-//                .build()
-//        ) { _, _ -> FlowConstants.MAIN }
-//
-//        put(FlowConstants.MAIN,
-//            Post.Builder(packageContext, MainActivity::class.java)
-//                .newTask()
-//                .build()
-//        )
-//    }
-//}

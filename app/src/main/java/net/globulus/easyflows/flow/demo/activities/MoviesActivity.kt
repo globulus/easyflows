@@ -11,11 +11,10 @@ import android.view.ViewGroup
 import android.widget.CheckedTextView
 import kotlinx.android.synthetic.main.activity_genres.*
 import net.globulus.easyflows.BundleProducer
-import net.globulus.easyflows.FlowManager
 import net.globulus.easyflows.flow.demo.R
 import net.globulus.easyflows.flow.demo.flows.MoviesChecklist
 import net.globulus.easyflows.flow.demo.utils.Constants
-import net.globulus.easyprefs.EasyPrefs
+import net.globulus.easyflows.proceed
 import kotlin.random.Random
 
 class MoviesActivity : BaseActivity(), MoviesChecklist, BundleProducer {
@@ -46,7 +45,7 @@ class MoviesActivity : BaseActivity(), MoviesChecklist, BundleProducer {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.doneItem -> {
-                FlowManager.proceed(this)
+                proceed()
                 true
             }
             else -> super.onOptionsItemSelected(item)

@@ -14,7 +14,7 @@ A library that makes it dead simple to manage complex flows of Android activitie
 
 Check out the [demo app](app) to see most of the basic concepts in action: flow starting and chaining, branchings, entry and exit relays, checklists, passing data around, and using flows to deliver results.
 
-Check out the docs below for a more in-depth overview of the library terminology, architecture, and code samples.
+Check out the docs below for a more in-depth overview of the library terminology, architecture, and code samples. If you're a Kotlin user, be sure to check out the [DSL section](#dsl) with simpler and more concise syntax.
 
 
 ### Installation
@@ -32,6 +32,59 @@ allprojects {
 ```gradle
 dependencies {
    implementation 'com.github.globulus:easyflows:-SNAPSHOT'
+}
+```
+
+### Sneak Peek
+
+A checklist:
+```kotlin
+interface RegisterChecklist : Checklist {
+    val isMinor: Boolean
+}
+```
+
+A flow:
+```kotlin
+private const val ORIGIN = REGISTER
+
+fun Context.registerFlow() = flow {
+    origin(ORIGIN) { c, _, _ ->
+        if (EasyPrefs.getAgreedToTermsOfUse(c))
+            ORIGIN
+        else
+            TERMS_OF_USE
+    }
+    
+    TERMS_OF_USE marks post(TermsOfUseActivity::class.java) followedBy { _, a ->
+        a.finish()
+        ORIGIN
+    }
+    
+    REGISTER marks post(RegisterActivity::class.java) followedBy { _, a ->
+        if (a.isMinor)
+            PARENTAL_CONSENT
+        else
+            PURCHASE
+    }
+
+    PARENTAL_CONSENT marks post(ParentalConsentActivity::class.java) followedBy PURCHASE
+
+    PURCHASE marks purchaseFlow(FlowConstants.Source.REGISTER)
+}
+```
+
+Starting the flow:
+```kotlin
+register.setOnClickListener {
+    FlowManager.start(registerFlow(), this)
+}
+```
+
+And finally moving through it:
+```kotlin
+register.setOnClickListener {
+    proceed()
 }
 ```
 
@@ -268,3 +321,19 @@ Flows can be rebased manually via the *Flow#rebase(String)* or *FlowManager#reba
 #### Switch
 
 You can switch from one flow to another on the fly using *FlowManager#switchTo(Flow, Context, Bundle)* method. This will terminate the current flow and start the new one.
+
+#### DSL
+
+Everything seen thus far can be equally used from Java and Kotlin, but Flow ships with a small DSL that makes flow creating and management in Kotlin much simpler:
+
+1. Define a new Flow on any Context with **flow**.
+2. Use **origin** instead of *setOrigin*, and **exit** instead of *setExitRelay*.
+3. *TAG* **marks** **post(CLASS)** { builderMethods() } **followedBy** RELAY.
+    * Naturally, the **followedBy** part is optional as RELAY is optional.
+    * You can just use a String instead of a RELAY.
+4. Add to Flow bundle with **+=**, and retreive from it with **[]**.
+5. Just invoke **proceed** on any FlowActivity instead of *FlowManager.proceed(this)*.
+
+The [demo app](app) makes heavy use of DSL, be sure to check it out!
+
+

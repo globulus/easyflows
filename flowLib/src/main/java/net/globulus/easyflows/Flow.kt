@@ -115,7 +115,7 @@ open class Flow(val packageContext: Context) : Launchable {
 
     fun setOrigin(tag: String, block: EntryRelayBlock): Flow {
         return setOrigin(tag, object : EntryRelay {
-            override fun getEntryNode(context: Context, flow: Flow, bundle: Bundle?): String {
+            override fun getEntryNode(context: Context, flow: Flow, bundle: Bundle?): String? {
                 return block(context, flow, bundle)
             }
         })

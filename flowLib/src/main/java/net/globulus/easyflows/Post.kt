@@ -23,7 +23,7 @@ class Post<T> private constructor(
 
     private var passIntentBundle = false // Passes intent bundle from caller activity
     private val mainBundle = Bundle()
-    private var sourceActivityBundleProducer: SourceActivityBundleProducer? = null
+    private var sourceActivityBundleProducer: SourceActivityBundleProducer<T>? = null
     private var valueProducers: MutableMap<String, ValueProducer<out Serializable>>? = null
 
     override fun launch(context: Context, bundle: Bundle?, flags: Int, requestCode: Int) {
@@ -38,8 +38,9 @@ class Post<T> private constructor(
             intent.putExtras(it)
         }
         intent.putExtras(mainBundle)
-        if (sourceActivityBundleProducer != null && context is Activity) {
-            intent.putExtras(sourceActivityBundleProducer!!(context))
+        if (sourceActivityBundleProducer != null) {
+            @Suppress("UNCHECKED_CAST")
+            intent.putExtras(sourceActivityBundleProducer!!(context as T))
         } else {
             (context as? BundleProducer)?.let {
                 intent.putExtras(it.bundle)
@@ -127,7 +128,7 @@ class Post<T> private constructor(
             return this
         }
 
-        fun sourceActivityBundleProducer(producer: SourceActivityBundleProducer): Builder<T> {
+        fun sourceActivityBundleProducer(producer: SourceActivityBundleProducer<T>): Builder<T> {
             post.sourceActivityBundleProducer = producer
             return this
         }
@@ -199,4 +200,4 @@ class Post<T> private constructor(
     }
 }
 
-typealias SourceActivityBundleProducer = (Activity) -> Bundle
+typealias SourceActivityBundleProducer<T> = (T) -> Bundle

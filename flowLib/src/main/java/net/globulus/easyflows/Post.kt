@@ -23,6 +23,7 @@ class Post<T> private constructor(
 
     private var passIntentBundle = false // Passes intent bundle from caller activity
     private val mainBundle = Bundle()
+    private var bundleProducer: BundleProducer? = null
     private var valueProducers: MutableMap<String, ValueProducer<out Serializable>>? = null
 
     override fun launch(context: Context, bundle: Bundle?, flags: Int, requestCode: Int) {
@@ -37,8 +38,12 @@ class Post<T> private constructor(
             intent.putExtras(it)
         }
         intent.putExtras(mainBundle)
-        (context as? BundleProducer)?.let {
-            intent.putExtras(it.bundle)
+        if (bundleProducer != null) {
+            intent.putExtras(bundleProducer!!.bundle)
+        } else {
+            (context as? BundleProducer)?.let {
+                intent.putExtras(it.bundle)
+            }
         }
         valueProducers?.let {
             for ((key, value) in it) {
@@ -119,6 +124,11 @@ class Post<T> private constructor(
          */
         fun passIntentBundle(): Builder<T> {
             post.passIntentBundle = true
+            return this
+        }
+
+        fun bundleProducer(bundleProducer: BundleProducer): Builder<T> {
+            post.bundleProducer = bundleProducer
             return this
         }
 

@@ -17,3 +17,5 @@ interface Relay<C : Checklist> {
      */
     fun nextNode(flow: Flow, activity: Activity, checklist: C): String?
 }
+
+typealias ConciseRelayBlock<T> = (Flow, T) -> String?

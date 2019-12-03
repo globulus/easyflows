@@ -23,7 +23,7 @@ class Post<T> private constructor(
 
     private var passIntentBundle = false // Passes intent bundle from caller activity
     private val mainBundle = Bundle()
-    private var valueProducers: MutableMap<String, ValueProducer<Serializable>>? = null
+    private var valueProducers: MutableMap<String, ValueProducer<out Serializable>>? = null
 
     override fun launch(context: Context, bundle: Bundle?, flags: Int, requestCode: Int) {
         val intent = Intent(this.context, locus)
@@ -167,12 +167,20 @@ class Post<T> private constructor(
             return this
         }
 
-        fun putExtra(name: String, valueProducer: ValueProducer<Serializable>): Builder<T> {
+        fun <S : Serializable> putExtra(name: String, valueProducer: ValueProducer<S>): Builder<T> {
             if (post.valueProducers == null) {
                 post.valueProducers = HashMap()
             }
             post.valueProducers!![name] = valueProducer
             return this
+        }
+
+        fun <S : Serializable> putExtra(name: String, valueProducer: () -> S): Builder<T> {
+            return putExtra(name, object : ValueProducer<S> {
+                override fun get(): S {
+                    return valueProducer()
+                }
+            })
         }
 
         fun build(): Post<T> {

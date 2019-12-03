@@ -56,7 +56,7 @@ open class Flow(val packageContext: Context) : Launchable {
     infix fun <L : Launchable, C : Checklist> Pair<String, L>.followedBy(relay: Relay<C>)
             = put(this.first, this.second, relay)
 
-    infix fun <T> Pair<String, Post<T>>.followedBy(relay: RelayBlock<T>): Flow
+    infix fun <T> Pair<String, Post<T>>.followedBy(relay: ConciseRelayBlock<T>): Flow
             where T : Activity, T : Checklist {
         return put(this.first, this.second, relay)
     }
@@ -79,7 +79,7 @@ open class Flow(val packageContext: Context) : Launchable {
         return put(tag, launchable = post, relay = relay)
     }
 
-    fun <T> put(tag: String, post: Post<T>, relayBlock: RelayBlock<T>): Flow
+    fun <T> put(tag: String, post: Post<T>, relayBlock: ConciseRelayBlock<T>): Flow
             where T : Activity, T : Checklist {
         return put(tag, post, object : Relay<T> {
             override fun nextNode(flow: Flow, activity: Activity, checklist: T): String? {
@@ -339,5 +339,3 @@ open class Flow(val packageContext: Context) : Launchable {
         const val INTENT_ACTIVITY_TAG = "flow_intent_activity_tag"
     }
 }
-
-private typealias RelayBlock<T> = (Flow, T) -> String?

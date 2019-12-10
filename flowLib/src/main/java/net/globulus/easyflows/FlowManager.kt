@@ -246,9 +246,16 @@ object FlowManager : FlowObserver {
     }
 
     private fun lockAndLoad(action: () -> Unit) {
-        CoroutineScope(Dispatchers.Main).launch {
-            mutex.withLock {
-                action()
+        // If mutex is locked, it means that FlowManager ops are executed from an already scheduled
+        // call - e.g, ending a flow after a proceed. These actions needs to be executed immediately
+        // since they came from the same thread and don't need to be synced.
+        if (mutex.isLocked) {
+            action()
+        } else {
+            CoroutineScope(Dispatchers.Main).launch {
+                mutex.withLock {
+                    action()
+                }
             }
         }
     }

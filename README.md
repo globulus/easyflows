@@ -266,6 +266,8 @@ Although you can launch and monitor Flows directly, it's much more convenient to
 
 The *FlowManager* will make sure that all of these actions are valid and that they work as one would expect based on Flow classes, while also making them easy to use and not have to worry about flow state.
 
+*FlowManager* is also guaranteed to run its methods synchronously and on the main thread. 
+
 #### Flow bundles
 
 Each flow has a bundle associated with it that's available to all of its nodes. Basically, whenever a Launchable (Post or another Flow) is launched within a Flow, it gets the current Flow bundle mixed in with other extras.

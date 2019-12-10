@@ -3,6 +3,11 @@ package net.globulus.easyflows
 import android.app.Activity
 import android.content.Context
 import android.os.Bundle
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.BlockingDeque
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
@@ -18,6 +23,7 @@ object FlowManager : FlowObserver {
     private val linkedFlows: ConcurrentMap<Flow, Flow> = ConcurrentHashMap()
     private val originalLaunchContexts: ConcurrentMap<Flow, Context> = ConcurrentHashMap()
     private var tagActivityMapper: TagActivityMapper? = null
+    private val mutex = Mutex()
 
     /**
      * @return the flow bundle of the currently active flow, and null if no flows are active
@@ -51,8 +57,10 @@ object FlowManager : FlowObserver {
      */
     @Synchronized
     fun start(flow: Flow, context: Context, bundle: Bundle?) {
-        prepFlowStart(flow)
-        flow.start(context, bundle)
+        lockAndLoad {
+            prepFlowStart(flow)
+            flow.start(context, bundle)
+        }
     }
 
     /**
@@ -68,9 +76,11 @@ object FlowManager : FlowObserver {
                        activity: Activity,
                        bundle: Bundle?,
                        requestCode: Int) {
-        prepFlowStart(flow)
-        originalLaunchContexts[flow] = activity
-        flow.startForResult(activity, bundle, requestCode)
+        lockAndLoad {
+            prepFlowStart(flow)
+            originalLaunchContexts[flow] = activity
+            flow.startForResult(activity, bundle, requestCode)
+        }
     }
 
     private fun prepFlowStart(flow: Flow) {
@@ -84,10 +94,12 @@ object FlowManager : FlowObserver {
      */
     @Synchronized
     fun <T> proceed(tag: String, activity: T) where T : Activity, T : Checklist {
-        if (activeFlows.isEmpty()) {
-            return
+        lockAndLoad {
+            if (activeFlows.isEmpty()) {
+                return@lockAndLoad
+            }
+            activeFlows.peek().nextFrom(tag, activity)
         }
-        activeFlows.peek().nextFrom(tag, activity)
     }
 
     /**
@@ -112,9 +124,11 @@ object FlowManager : FlowObserver {
 
     @Synchronized
     fun rebase(survivorTag: String) {
-        check(activeFlows.isNotEmpty()) { "Rebase called without an active flow!" }
-        val flow = activeFlows.peek()
-        flow.rebase(survivorTag)
+        lockAndLoad {
+            check(activeFlows.isNotEmpty()) { "Rebase called without an active flow!" }
+            val flow = activeFlows.peek()
+            flow.rebase(survivorTag)
+        }
     }
 
     /**
@@ -123,9 +137,11 @@ object FlowManager : FlowObserver {
      */
     @Synchronized
     fun terminate() {
-        check(activeFlows.isNotEmpty()) { "Terminate called without an active flow!" }
-        val flow = activeFlows.peek()
-        flow.terminate(Activity.RESULT_CANCELED, null)
+        lockAndLoad {
+            check(activeFlows.isNotEmpty()) { "Terminate called without an active flow!" }
+            val flow = activeFlows.peek()
+            flow.terminate(Activity.RESULT_CANCELED, null)
+        }
     }
 
     /**
@@ -135,11 +151,13 @@ object FlowManager : FlowObserver {
      */
     @Synchronized
     fun switchTo(flow: Flow, context: Context, bundle: Bundle?) {
-        if (activeFlows.isNotEmpty()) {
-            val current = activeFlows.peek()
-            current.terminate(Activity.RESULT_CANCELED, null)
+        lockAndLoad {
+            if (activeFlows.isNotEmpty()) {
+                val current = activeFlows.peek()
+                current.terminate(Activity.RESULT_CANCELED, null)
+            }
+            start(flow, context, bundle)
         }
-        start(flow, context, bundle)
     }
 
     @Synchronized
@@ -160,21 +178,25 @@ object FlowManager : FlowObserver {
 
     @Synchronized
     override fun nextFlow(current: Flow, next: Flow) {
-        linkedFlows[next] = current
-        originalLaunchContexts[current]?.let {
-            originalLaunchContexts[next] = it
+        lockAndLoad {
+            linkedFlows[next] = current
+            originalLaunchContexts[current]?.let {
+                originalLaunchContexts[next] = it
+            }
+            activeFlows.push(next)
+            next.setObserver(this)
         }
-        activeFlows.push(next)
-        next.setObserver(this)
     }
 
     @Synchronized
     override fun rebased(flow: Flow, event: RebaseFlowEvent) {
-        if (event.originalRebase) {
-            val current = activeFlows.pop()
-            check(flow == current) { "Rebased flow != active flow!" }
-            rebaseLinkedFlow(current, event)
-            activeFlows.push(current)
+        lockAndLoad {
+            if (event.originalRebase) {
+                val current = activeFlows.pop()
+                check(flow == current) { "Rebased flow != active flow!" }
+                rebaseLinkedFlow(current, event)
+                activeFlows.push(current)
+            }
         }
     }
 
@@ -184,13 +206,15 @@ object FlowManager : FlowObserver {
     }
 
     private fun flowEnded(flow: Flow, event: TerminateFlowEvent?) {
-        if (activeFlows.isEmpty()) {
-            return
+        lockAndLoad {
+            if (activeFlows.isEmpty()) {
+                return@lockAndLoad
+            }
+            val current = activeFlows.pop()
+            originalLaunchContexts.remove(current)
+            check(flow == current) { "Finished flow != active flow!" }
+            removeLinkedFlows(current, event)
         }
-        val current = activeFlows.pop()
-        originalLaunchContexts.remove(current)
-        check(flow == current) { "Finished flow != active flow!" }
-        removeLinkedFlows(current, event)
     }
 
     private fun removeLinkedFlows(current: Flow, event: TerminateFlowEvent?) {
@@ -218,6 +242,14 @@ object FlowManager : FlowObserver {
             }
             currentCopy.rebase(originalEvent.survivorTag, false)
             rebaseLinkedFlow(currentCopy, originalEvent)
+        }
+    }
+
+    private fun lockAndLoad(action: () -> Unit) {
+        CoroutineScope(Dispatchers.Main).launch {
+            mutex.withLock {
+                action()
+            }
         }
     }
 }

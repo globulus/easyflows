@@ -162,12 +162,14 @@ object FlowManager : FlowObserver {
 
     @Synchronized
     internal fun backOut(context: Context, flowId: String, tag: String) {
-        if (activeFlows.isEmpty()) {
-            return
-        }
-        val flow = activeFlows.peek()
-        if (flow.id == flowId && flow.willBackOutWith(context, tag)) {
-            activeFlows.pop()
+        lockAndLoad {
+            if (activeFlows.isEmpty()) {
+                return@lockAndLoad
+            }
+            val flow = activeFlows.peek()
+            if (flow.id == flowId && flow.willBackOutWith(context, tag)) {
+                activeFlows.pop()
+            }
         }
     }
 

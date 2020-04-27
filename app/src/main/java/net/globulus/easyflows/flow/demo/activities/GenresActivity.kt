@@ -2,8 +2,8 @@ package net.globulus.easyflows.flow.demo.activities
 
 import android.content.Context
 import android.os.Bundle
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.TextView
@@ -27,7 +27,8 @@ class GenresActivity : BaseActivity(), BundleProducer {
         recyclerView.apply {
             val activity = this@GenresActivity
             setHasFixedSize(true)
-            layoutManager = LinearLayoutManager(activity)
+            layoutManager =
+                androidx.recyclerview.widget.LinearLayoutManager(activity)
             adapter = Adapter(activity) {
                 genre = it
                 proceed()
@@ -40,7 +41,7 @@ class GenresActivity : BaseActivity(), BundleProducer {
     private class Adapter(
         context: Context,
         private val onClickListener: (String) -> Unit
-    ) : RecyclerView.Adapter<Adapter.ViewHolder>() {
+    ) : androidx.recyclerview.widget.RecyclerView.Adapter<Adapter.ViewHolder>() {
 
         private var items = context.resources.getStringArray(R.array.genres)
 
@@ -61,6 +62,6 @@ class GenresActivity : BaseActivity(), BundleProducer {
             }
         }
 
-        class ViewHolder(val textView: TextView) : RecyclerView.ViewHolder(textView)
+        class ViewHolder(val textView: TextView) : androidx.recyclerview.widget.RecyclerView.ViewHolder(textView)
     }
 }

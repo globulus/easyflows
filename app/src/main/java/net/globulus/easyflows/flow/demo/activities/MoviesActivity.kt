@@ -1,8 +1,8 @@
 package net.globulus.easyflows.flow.demo.activities
 
 import android.os.Bundle
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import android.util.SparseBooleanArray
 import android.view.LayoutInflater
 import android.view.Menu
@@ -32,7 +32,8 @@ class MoviesActivity : BaseActivity(), MoviesChecklist, BundleProducer {
         recyclerView.apply {
             val activity = this@MoviesActivity
             setHasFixedSize(true)
-            layoutManager = LinearLayoutManager(activity)
+            layoutManager =
+                androidx.recyclerview.widget.LinearLayoutManager(activity)
             adapter = activity.adapter
         }
     }
@@ -59,7 +60,7 @@ class MoviesActivity : BaseActivity(), MoviesChecklist, BundleProducer {
         putStringArray(Constants.BUNDLE_MOVIES, adapter.selection.toTypedArray())
     }
 
-    private class Adapter(genre: String) : RecyclerView.Adapter<Adapter.ViewHolder>() {
+    private class Adapter(genre: String) : androidx.recyclerview.widget.RecyclerView.Adapter<Adapter.ViewHolder>() {
 
         private var items = mutableListOf<String>()
         private val selectedIndices = SparseBooleanArray()
@@ -93,7 +94,7 @@ class MoviesActivity : BaseActivity(), MoviesChecklist, BundleProducer {
 
         val selection get() = items.filterIndexed { i, _ -> selectedIndices.get(i) }
 
-        class ViewHolder(val checkedTextView: CheckedTextView) : RecyclerView.ViewHolder(checkedTextView)
+        class ViewHolder(val checkedTextView: CheckedTextView) : androidx.recyclerview.widget.RecyclerView.ViewHolder(checkedTextView)
 
         companion object {
             private const val ITEM_COUNT = 5

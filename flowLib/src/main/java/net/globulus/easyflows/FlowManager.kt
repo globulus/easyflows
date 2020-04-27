@@ -15,7 +15,8 @@ import java.util.concurrent.LinkedBlockingDeque
 
 /**
  * Drives the app flows through its shared instance, allowing for extremely simple flow management
- * from within the app itself.
+ * from within the app itself. Also makes sure that entire flow management is synchronized (no race
+ * conditions) and its ops executed on the UI thread.
  */
 object FlowManager : FlowObserver {
 

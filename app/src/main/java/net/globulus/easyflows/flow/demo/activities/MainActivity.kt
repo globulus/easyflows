@@ -3,8 +3,8 @@ package net.globulus.easyflows.flow.demo.activities
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.TextView
@@ -24,7 +24,8 @@ class MainActivity : BaseActivity() {
 
         recyclerView.apply {
             setHasFixedSize(true)
-            layoutManager = LinearLayoutManager(this@MainActivity)
+            layoutManager =
+                androidx.recyclerview.widget.LinearLayoutManager(this@MainActivity)
             adapter = Adapter().also {
                 it.refresh(this@MainActivity)
             }
@@ -48,7 +49,7 @@ class MainActivity : BaseActivity() {
         }
     }
 
-    private class Adapter : RecyclerView.Adapter<Adapter.ViewHolder>() {
+    private class Adapter : androidx.recyclerview.widget.RecyclerView.Adapter<Adapter.ViewHolder>() {
 
         private var items = arrayOf<String>()
 
@@ -70,6 +71,6 @@ class MainActivity : BaseActivity() {
             notifyDataSetChanged()
         }
 
-        class ViewHolder(val textView: TextView) : RecyclerView.ViewHolder(textView)
+        class ViewHolder(val textView: TextView) : androidx.recyclerview.widget.RecyclerView.ViewHolder(textView)
     }
 }

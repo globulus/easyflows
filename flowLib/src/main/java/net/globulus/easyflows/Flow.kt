@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import org.greenrobot.eventbus.EventBus
+import java.lang.StringBuilder
 import java.util.*
 
 /**
@@ -246,6 +247,10 @@ open class Flow(val packageContext: Context) : Launchable {
         }
     }
 
+    fun <T> backTrackTo(tag: String, activity: T) where T : Activity, T : Checklist {
+
+    }
+
     /**
      * Kills all the activities in the flow except Survivor, which should be the next top activity
      * of the flow. Also kills all the previous flows. An alternative way of thinking about rebasing
@@ -311,7 +316,8 @@ open class Flow(val packageContext: Context) : Launchable {
      * @throws FlowException if the tag is missing
      */
     private fun getAndCheck(tag: String): Node<*> {
-        return layout[tag] ?: throw FlowException("No post found with tag: $tag")
+        return layout[tag]
+            ?: throw FlowException("No post found with tag: $tag.\nFlow trace: $flowTrace")
     }
 
     override fun launch(context: Context, bundle: Bundle?, flags: Int, requestCode: Int) {
@@ -328,6 +334,15 @@ open class Flow(val packageContext: Context) : Launchable {
     override fun hashCode(): Int {
         return id.hashCode()
     }
+
+    override fun toString(): String {
+        return flowTrace
+    }
+
+    private val flowTrace get() = StringBuilder()
+        .append("Origin tag?: $originTag")
+        .append("Layout: $layout")
+        .toString()
 
     private class Node<C : Checklist>(
         internal val launchable: Launchable,

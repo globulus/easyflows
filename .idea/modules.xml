@@ -2,9 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" group="easyflows/app" />
-      <module fileurl="file://$PROJECT_DIR$/easyflows.iml" filepath="$PROJECT_DIR$/easyflows.iml" group="easyflows" />
-      <module fileurl="file://$PROJECT_DIR$/flowLib/flowLib.iml" filepath="$PROJECT_DIR$/flowLib/flowLib.iml" group="easyflows/flowLib" />
+      <module fileurl="file://$PROJECT_DIR$/easyflows.iml" filepath="$PROJECT_DIR$/easyflows.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/easyflows.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/easyflows.app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/flowLib/easyflows.flowLib.iml" filepath="$PROJECT_DIR$/.idea/modules/flowLib/easyflows.flowLib.iml" />
     </modules>
   </component>
 </project>

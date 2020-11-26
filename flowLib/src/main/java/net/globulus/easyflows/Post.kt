@@ -23,7 +23,7 @@ class Post<T> private constructor(
 
     private var passIntentBundle = false // Passes intent bundle from caller activity
     private val mainBundle = Bundle()
-    private var sourceActivityBundleProducer: SourceActivityBundleProducer<*>? = null
+    private var sourceActivityBundleProducer: SourceActivityBundleProducer<in Activity>? = null
     private var valueProducers: MutableMap<String, ValueProducer<out Serializable>>? = null
 
     override fun launch(context: Context, bundle: Bundle?, flags: Int, requestCode: Int) {
@@ -71,6 +71,10 @@ class Post<T> private constructor(
         if (shouldRebase) {
             FlowManager.rebase(intent.getStringExtra(Flow.INTENT_ACTIVITY_TAG))
         }
+    }
+
+    override fun toString(): String {
+        return "Post locus: ${locus.canonicalName}"
     }
 
     class Builder<T>
@@ -127,8 +131,8 @@ class Post<T> private constructor(
             return this
         }
 
-        fun <A> sourceActivityBundleProducer(producer: SourceActivityBundleProducer<A>)
-                : Builder<T> where A : Activity, A : Checklist {
+        fun sourceActivityBundleProducer(producer: SourceActivityBundleProducer<in Activity>)
+                : Builder<T> {
             post.sourceActivityBundleProducer = producer
             return this
         }

@@ -3,18 +3,8 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'maven-publish'
 
-group = 'net.globulus.easyflows'
-
-sourceCompatibility = 1.8 // java 8
-targetCompatibility = 1.8
-
-ext {
-    PUBLISH_GROUP_ID = 'net.globulus'
-    PUBLISH_ARTIFACT_ID = 'easyflows'
-    PUBLISH_VERSION = '1.0.0'
-}
-
 android {
+
     compileSdkVersion 33
 
 
@@ -22,6 +12,10 @@ android {
     defaultConfig {
         minSdkVersion 21
         targetSdkVersion 33
+
+        aarMetadata {
+            minCompileSdk = 29
+        }
     }
 
     buildTypes {
@@ -32,6 +26,34 @@ android {
     }
     namespace 'net.globulus.easyflows'
 
+    testFixtures {
+        enable = true
+    }
+
+    publishing {
+        singleVariant('release') {
+            withSourcesJar()
+        }
+    }
+
+}
+
+afterEvaluate {
+    publishing {
+
+
+        publications {
+            release(MavenPublication) {
+                groupId = 'net.globulus'
+                artifactId = 'easyflows'
+                version = '1.1.0'
+
+                afterEvaluate {
+                    from components.release
+                }
+            }
+        }
+    }
 }
 
 dependencies {

@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Parcelable
 import java.io.Serializable
+import java.lang.IllegalStateException
 import java.util.*
 
 /**
@@ -69,7 +70,7 @@ class Post<T> private constructor(
         }
 
         if (shouldRebase) {
-            FlowManager.rebase(intent.getStringExtra(Flow.INTENT_ACTIVITY_TAG))
+            FlowManager.rebase(intent.getStringExtra(Flow.INTENT_ACTIVITY_TAG) ?: throw IllegalStateException())
         }
     }
 

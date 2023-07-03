@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
+import java.lang.IllegalStateException
 
 /**
  * Class containing flow management implementation necessary to allow for [FlowManager] to
@@ -38,7 +39,8 @@ open class FlowActivity : AppCompatActivity(), Checklist {
 
     private fun handleFinish() {
         intent.getStringExtra(Flow.INTENT_FLOW_ID)?.let {
-            FlowManager.backOut(this, it, intent.getStringExtra(Flow.INTENT_ACTIVITY_TAG))
+            FlowManager.backOut(this, it,
+                intent.getStringExtra(Flow.INTENT_ACTIVITY_TAG) ?: throw IllegalStateException())
         }
     }
 

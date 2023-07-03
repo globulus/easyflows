@@ -40,7 +40,7 @@ class MainActivity : BaseActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == Constants.REQUEST_MOVIES) {
             data?.let {
-                val movies = it.getStringArrayExtra(Constants.BUNDLE_MOVIES)
+                val movies = it.getStringArrayExtra(Constants.BUNDLE_MOVIES) ?: emptyArray()
                 for (movie in movies) {
                     EasyPrefs.addToPurchasedMovies(this, movie)
                 }

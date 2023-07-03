@@ -28,7 +28,7 @@ class MoviesActivity : BaseActivity(), MoviesChecklist, BundleProducer {
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        adapter = Adapter(intent.getStringExtra(Constants.BUNDLE_GENRE))
+        adapter = Adapter(intent.getStringExtra(Constants.BUNDLE_GENRE) ?: "")
         recyclerView.apply {
             val activity = this@MoviesActivity
             setHasFixedSize(true)

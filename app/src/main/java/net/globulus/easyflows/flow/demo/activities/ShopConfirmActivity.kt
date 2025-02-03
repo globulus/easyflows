@@ -1,8 +1,7 @@
 package net.globulus.easyflows.flow.demo.activities
 
 import android.os.Bundle
-import kotlinx.android.synthetic.main.activity_login.toolbar
-import kotlinx.android.synthetic.main.activity_shop_confirm.*
+import android.widget.Button
 import net.globulus.easyflows.FlowManager
 import net.globulus.easyflows.flow.demo.R
 import net.globulus.easyflows.flow.demo.utils.Constants
@@ -14,9 +13,9 @@ class ShopConfirmActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_shop_confirm)
-        setSupportActionBar(toolbar)
+        setSupportActionBar(findViewById(R.id.toolbar))
 
-        done.setOnClickListener {
+        findViewById<Button>(R.id.done).setOnClickListener {
             proceed()
         }
     }

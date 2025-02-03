@@ -23,6 +23,7 @@ open class FlowActivity : AppCompatActivity(), Checklist {
         EventBus.getDefault().unregister(this)
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         super.onBackPressed()
         handleFinish()

@@ -3,12 +3,11 @@ package net.globulus.easyflows.flow.demo.activities
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.TextView
-import kotlinx.android.synthetic.main.activity_main.*
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import net.globulus.easyflows.FlowManager
 import net.globulus.easyflows.flow.demo.R
 import net.globulus.easyflows.flow.demo.flows.purchaseFlow
@@ -20,9 +19,9 @@ class MainActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        setSupportActionBar(toolbar)
+        setSupportActionBar(findViewById(R.id.toolbar))
 
-        recyclerView.apply {
+        findViewById<RecyclerView>(R.id.recyclerView).apply {
             setHasFixedSize(true)
             layoutManager =
                 androidx.recyclerview.widget.LinearLayoutManager(this@MainActivity)
@@ -31,13 +30,15 @@ class MainActivity : BaseActivity() {
             }
         }
 
-        fab.setOnClickListener {
+        findViewById<FloatingActionButton>(R.id.fab).setOnClickListener {
            FlowManager.startForResult(purchaseFlow(),
                this, Constants.REQUEST_MOVIES)
         }
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == Constants.REQUEST_MOVIES) {
             data?.let {
                 val movies = it.getStringArrayExtra(Constants.BUNDLE_MOVIES) ?: emptyArray()
@@ -45,11 +46,11 @@ class MainActivity : BaseActivity() {
                     EasyPrefs.addToPurchasedMovies(this, movie)
                 }
             }
-            (recyclerView.adapter as? Adapter)?.refresh(this)
+            (findViewById<RecyclerView>(R.id.recyclerView).adapter as? Adapter)?.refresh(this)
         }
     }
 
-    private class Adapter : androidx.recyclerview.widget.RecyclerView.Adapter<Adapter.ViewHolder>() {
+    private class Adapter : RecyclerView.Adapter<Adapter.ViewHolder>() {
 
         private var items = arrayOf<String>()
 
@@ -71,6 +72,6 @@ class MainActivity : BaseActivity() {
             notifyDataSetChanged()
         }
 
-        class ViewHolder(val textView: TextView) : androidx.recyclerview.widget.RecyclerView.ViewHolder(textView)
+        class ViewHolder(val textView: TextView) : RecyclerView.ViewHolder(textView)
     }
 }

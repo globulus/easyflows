@@ -317,7 +317,7 @@ open class Flow(val packageContext: Context) : Launchable {
      */
     private fun getAndCheck(tag: String): Node<*> {
         return layout[tag]
-            ?: throw FlowException("No post found with tag: $tag.\nFlow trace: $flowTrace")
+            ?: throw FlowException("No post found with tag: $tag. \nFlow trace: $flowTrace")
     }
 
     override fun launch(context: Context, bundle: Bundle?, flags: Int, requestCode: Int) {
@@ -347,7 +347,11 @@ open class Flow(val packageContext: Context) : Launchable {
     private class Node<C : Checklist>(
         internal val launchable: Launchable,
         internal val relay: Relay<C>?
-    )
+    ) {
+        override fun toString(): String {
+            return launchable.toString()
+        }
+    }
 
     companion object {
         const val INTENT_FLOW_ID = "flow_intent_flow_id"

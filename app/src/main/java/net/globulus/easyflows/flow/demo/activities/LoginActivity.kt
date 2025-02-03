@@ -1,7 +1,7 @@
 package net.globulus.easyflows.flow.demo.activities
 
 import android.os.Bundle
-import kotlinx.android.synthetic.main.activity_login.*
+import android.widget.Button
 import net.globulus.easyflows.flow.demo.R
 import net.globulus.easyflows.proceed
 
@@ -10,10 +10,10 @@ class LoginActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
-        setSupportActionBar(toolbar)
+        setSupportActionBar(findViewById(R.id.toolbar))
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        login.setOnClickListener {
+        findViewById<Button>(R.id.login).setOnClickListener {
             proceed()
         }
     }

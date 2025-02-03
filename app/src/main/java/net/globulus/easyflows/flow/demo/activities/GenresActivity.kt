@@ -2,12 +2,11 @@ package net.globulus.easyflows.flow.demo.activities
 
 import android.content.Context
 import android.os.Bundle
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.TextView
-import kotlinx.android.synthetic.main.activity_genres.*
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import net.globulus.easyflows.BundleProducer
 import net.globulus.easyflows.flow.demo.R
 import net.globulus.easyflows.flow.demo.utils.Constants
@@ -20,15 +19,13 @@ class GenresActivity : BaseActivity(), BundleProducer {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_genres)
-        setSupportActionBar(toolbar)
-        setSupportActionBar(toolbar)
+        setSupportActionBar(findViewById(R.id.toolbar))
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        recyclerView.apply {
+        findViewById<RecyclerView>(R.id.recyclerView).apply {
             val activity = this@GenresActivity
             setHasFixedSize(true)
-            layoutManager =
-                androidx.recyclerview.widget.LinearLayoutManager(activity)
+            layoutManager = LinearLayoutManager(activity)
             adapter = Adapter(activity) {
                 genre = it
                 proceed()

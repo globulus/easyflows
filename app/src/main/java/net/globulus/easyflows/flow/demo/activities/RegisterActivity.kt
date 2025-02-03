@@ -2,7 +2,7 @@ package net.globulus.easyflows.flow.demo.activities
 
 import android.app.DatePickerDialog
 import android.os.Bundle
-import kotlinx.android.synthetic.main.activity_register.*
+import android.widget.Button
 import net.globulus.easyflows.flow.demo.R
 import net.globulus.easyflows.flow.demo.flows.RegisterChecklist
 import net.globulus.easyflows.proceed
@@ -16,20 +16,22 @@ class RegisterActivity : BaseActivity(), RegisterChecklist {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_register)
-        setSupportActionBar(toolbar)
+        setSupportActionBar(findViewById(R.id.toolbar))
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        dob.setOnClickListener {
-            DatePickerDialog(this, DatePickerDialog.OnDateSetListener { _, y, m, d ->
-                dobDate = LocalDate.of(y, m + 1, d)
-                dob.text = dobDate!!.format(DateTimeFormatter.ISO_LOCAL_DATE)
-                register.isEnabled = true
-            }, dobDate?.year ?: DEFAULT_YEAR,
-                (dobDate?.monthValue ?: 1) - 1, dobDate?.dayOfMonth ?: 0)
-                .show()
+        findViewById<Button>(R.id.dob).apply {
+            setOnClickListener {
+                DatePickerDialog(this@RegisterActivity, { _, y, m, d ->
+                    dobDate = LocalDate.of(y, m + 1, d)
+                    text = dobDate!!.format(DateTimeFormatter.ISO_LOCAL_DATE)
+                    findViewById<Button>(R.id.register).isEnabled = true
+                }, dobDate?.year ?: DEFAULT_YEAR,
+                    (dobDate?.monthValue ?: 1) - 1, dobDate?.dayOfMonth ?: 0)
+                    .show()
+            }
         }
 
-        register.setOnClickListener {
+        findViewById<Button>(R.id.register).setOnClickListener {
             proceed()
         }
     }

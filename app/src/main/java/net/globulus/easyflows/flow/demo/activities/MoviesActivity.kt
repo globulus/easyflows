@@ -1,15 +1,14 @@
 package net.globulus.easyflows.flow.demo.activities
 
 import android.os.Bundle
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import android.util.SparseBooleanArray
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewGroup
 import android.widget.CheckedTextView
-import kotlinx.android.synthetic.main.activity_genres.*
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import net.globulus.easyflows.BundleProducer
 import net.globulus.easyflows.flow.demo.R
 import net.globulus.easyflows.flow.demo.flows.MoviesChecklist
@@ -24,16 +23,14 @@ class MoviesActivity : BaseActivity(), MoviesChecklist, BundleProducer {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_genres)
-        setSupportActionBar(toolbar)
-        setSupportActionBar(toolbar)
+        setSupportActionBar(findViewById(R.id.toolbar))
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         adapter = Adapter(intent.getStringExtra(Constants.BUNDLE_GENRE) ?: "")
-        recyclerView.apply {
+        findViewById<RecyclerView>(R.id.recyclerView).apply {
             val activity = this@MoviesActivity
             setHasFixedSize(true)
-            layoutManager =
-                androidx.recyclerview.widget.LinearLayoutManager(activity)
+            layoutManager = LinearLayoutManager(activity)
             adapter = activity.adapter
         }
     }
@@ -60,7 +57,7 @@ class MoviesActivity : BaseActivity(), MoviesChecklist, BundleProducer {
         putStringArray(Constants.BUNDLE_MOVIES, adapter.selection.toTypedArray())
     }
 
-    private class Adapter(genre: String) : androidx.recyclerview.widget.RecyclerView.Adapter<Adapter.ViewHolder>() {
+    private class Adapter(genre: String) : RecyclerView.Adapter<Adapter.ViewHolder>() {
 
         private var items = mutableListOf<String>()
         private val selectedIndices = SparseBooleanArray()
@@ -94,7 +91,7 @@ class MoviesActivity : BaseActivity(), MoviesChecklist, BundleProducer {
 
         val selection get() = items.filterIndexed { i, _ -> selectedIndices.get(i) }
 
-        class ViewHolder(val checkedTextView: CheckedTextView) : androidx.recyclerview.widget.RecyclerView.ViewHolder(checkedTextView)
+        class ViewHolder(val checkedTextView: CheckedTextView) : RecyclerView.ViewHolder(checkedTextView)
 
         companion object {
             private const val ITEM_COUNT = 5

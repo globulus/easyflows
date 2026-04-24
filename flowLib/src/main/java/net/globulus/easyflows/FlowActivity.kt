@@ -1,6 +1,7 @@
 package net.globulus.easyflows
 
 import android.os.Bundle
+import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -16,6 +17,14 @@ open class FlowActivity : AppCompatActivity(), Checklist {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         EventBus.getDefault().register(this)
+        onBackPressedDispatcher.addCallback(this) {
+            isEnabled = false
+            try {
+                onBackPressed()
+            } finally {
+                isEnabled = !isFinishing
+            }
+        }
     }
 
     override fun onDestroy() {

@@ -20,7 +20,7 @@ open class FlowActivity : AppCompatActivity(), Checklist {
         onBackPressedDispatcher.addCallback(this) {
             isEnabled = false
             try {
-                onBackPressed()
+                onBackPressedCompat()
             } finally {
                 isEnabled = !isFinishing
             }
@@ -32,9 +32,8 @@ open class FlowActivity : AppCompatActivity(), Checklist {
         EventBus.getDefault().unregister(this)
     }
 
-    @Deprecated("Deprecated in Java")
-    override fun onBackPressed() {
-        super.onBackPressed()
+    protected open fun onBackPressedCompat() {
+        onBackPressedDispatcher.onBackPressed()
         handleFinish()
     }
 
